@@ -1,0 +1,70 @@
+# Local AI guidance, planning, and tool state (any depth)
+[Pp][Ll][Aa][Nn].md
+[Pp][Ll][Aa][Nn][Ss].md
+[Ss][Kk][Ii][Ll][Ll][Ss].md
+[Ss][Kk][Ii][Ll][Ll].md
+AGENTS.md
+AGENTS.override.md
+CLAUDE.md
+GEMINI.md
+.agents/
+.codex/
+.claude/
+.cursor/
+.copilot/
+.aider*
+.ai/
+ai-notes/
+chat-exports/
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+
+# Credentials and machine-local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+config.local.*
+
+# Downloaded data, SDKs, and generated model artifacts
+/data/
+/datasets/
+/checkpoints/
+/artifacts/
+/sdk/
+/qairt/
+/snpe/
+*.onnx
+*.dlc
+*.torch
+*.pt
+*.pth
+*.raw
+/output/
+/outputs/
+/logs/
+*.log
+# Keep small results summaries/manifests eligible for version control.
+/results/raw/
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
