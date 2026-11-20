@@ -1,0 +1,61 @@
+{
+  "recording": "raw_data/real/separate_hand/testing/user_19/recording_00",
+  "data_commit": "355df534a1c761ac416427925485b311f22ce50e",
+  "n_crops": 60,
+  "n_frames": 20,
+  "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "frames_scanned": 20,
+  "crops_per_frame": {
+    "3": 20
+  },
+  "crops_per_hand": {
+    "0": 40,
+    "1": 20
+  },
+  "crops_per_camera": {
+    "1": 20,
+    "2": 40
+  },
+  "pixel_range": [
+    0,
+    255
+  ],
+  "pixel_mean": 73.14226888020833,
+  "crop_placement": "ground-truth poses, HandTracker.gen_crop_cameras(min_num_crops=1), HandTrackerOpts defaults",
+  "upstream_make_inputs_crosscheck": "exact match on every frame",
+  "pytorch3d": "scripts/pytorch3d_shim.py (so3_exp_map)",
+  "upstream_runtime_patches": [
+    "lib.tracker.video_pose_data.VideoStream.__iter__: fps log line uses float() (PyAV>=19)"
+  ],
+  "notes": [
+    "These crops were placed using the so3_exp_map stand-in in scripts/pytorch3d_shim.py (real pytorch3d is not installed on the Mac); it matches scipy Rotation.from_rotvec within 1e-6 (tests/test_so3_standin.py).",
+    "Part A's full evaluation should use real pytorch3d, not this stand-in."
+  ],
+  "sha256": {
+    "data/raw_data/real/separate_hand/testing/user_19/recording_00.mp4": "8df9d21e1843902a6bceb1750e177bd272aaec9a9cf8968363e6cfac7dd1bc3c",
+    "data/raw_data/real/separate_hand/testing/user_19/recording_00.json": "45329893f3c1fa22d99e1ceaf3ffa5c60cdbbe1179d9a2d1b7058017d23c5376",
+    "artifacts/crops/crops_uint8.npy": "0a5e042d0a4971dac990164f433c9b89c3890070069b1ed5a3aaa4269a28e7f4",
+    "manifests/crops_d5.csv": "83dd67fc8c6659ecf29e328f82ebb331a335a5bfb0e319eeced2a8f886fcddfb"
+  }
+}

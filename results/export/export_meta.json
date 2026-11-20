@@ -1,0 +1,61 @@
+{
+  "upstream_commit": "e263ec0844abf73457468a050a75853444d33d69",
+  "checkpoint": "third_party/UmeTrack/pretrained_models/pretrained_weights.torch",
+  "checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d",
+  "module": "_feature_extractor._image_backbone",
+  "onnx_path": "artifacts/encoder.onnx",
+  "onnx_sha256": "1e86586510d928febb2db643caaef6e13fc48e4e5dd236424422cd89f34fa483",
+  "onnx_bytes": 15098488,
+  "exporter": "dynamo",
+  "exporter_attempts": [
+    {
+      "exporter": "dynamo",
+      "warnings": [],
+      "problems": []
+    }
+  ],
+  "notes": [
+    "dynamo exporter builds at opset 18 (its minimum) and down-converts to the requested opset 17 with the onnx C API version converter; eval-mode BatchNorm is folded into Conv by the exporter's optimizer."
+  ],
+  "versions": {
+    "torch": "2.15.0",
+    "onnx": "1.23.2",
+    "onnxscript": "0.7.2",
+    "onnxruntime": "1.32.0"
+  },
+  "opset": 17,
+  "ir_version": 10,
+  "inputs": [
+    {
+      "name": "crops",
+      "shape": [
+        1,
+        1,
+        96,
+        96
+      ],
+      "dtype": "FLOAT"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "features",
+      "shape": [
+        1,
+        72,
+        6,
+        6
+      ],
+      "dtype": "FLOAT"
+    }
+  ],
+  "op_types": [
+    "Add",
+    "Conv",
+    "MaxPool",
+    "Relu"
+  ],
+  "n_nodes": 67,
+  "n_functions": 0,
+  "smoke_zeros_max_abs_vs_torch": 2.5033950805664062e-06
+}
