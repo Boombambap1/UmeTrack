@@ -1,0 +1,46 @@
+# Part B experiment configuration. Paths are relative to the repo root.
+
+upstream:
+  repo: https://github.com/facebookresearch/UmeTrack.git
+  commit: e263ec0844abf73457468a050a75853444d33d69
+  checkpoint: third_party/UmeTrack/pretrained_models/pretrained_weights.torch
+  checkpoint_sha256: 72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d  # shasum -a 256
+
+encoder:
+  module: _feature_extractor._image_backbone  # attribute path on the loaded UmeTrack model
+  input:
+    name: crops
+    shape: [1, 1, 96, 96]
+    dtype: float32
+    layout: NCHW
+    scale: "uint8 / 255"
+  output:
+    name: features
+    shape: [1, 72, 6, 6]
+    dtype: float32
+    layout: NCHW
+  onnx_opset: 17
+
+sdk:
+  qairt_version: "2.33.2.250410"  # must match on conversion host and board
+  conversion_host: TBD
+  board: rb5
+
+data:
+  recordings_dir: data/
+  first_recording: raw_data/real/separate_hand/testing/user_19/recording_00
+
+# proposed, agree with Steven before formal comparison; never loosen to pass
+tolerances:
+  onnx_vs_torch:
+    max_abs: 1.0e-4
+    rel_l2: 1.0e-5
+  board_cpu_vs_onnx:
+    max_abs: 1.0e-3
+    rel_l2: 1.0e-4
+  pose_error_change_mm: 0.1
+
+benchmark:
+  warmup_runs: 10
+  measured_runs: 100
+  batch_size: 1
