@@ -15,8 +15,16 @@ own runner, and each runner only picks up its own tests, so neither side needs t
 Both READMEs create the environment at `.venv/`. They are normally separate machines; if both live in one
 checkout, give one of them another directory (e.g. `.venv-b/`) and use that path in the commands below.
 
-Crops generated in the two environments should not be treated as interchangeable (different package versions,
-and Part B uses the pytorch3d stand-in); formal comparisons use Part A's frozen crop bundle.
+Crops generated in the two environments are not interchangeable. Part B's 60-crop development set and 184-crop
+calibration set are development / calibration only; formal comparisons use Part A's frozen crop files
+(see `docs/tensor-contract.md`, "Crop sets"):
+
+> "Crop IDs match, but the decoding stacks produce different pixels from the same video. The first decoded
+> frame differed by up to two intensity levels. The geometry shim also introduced small additional crop
+> differences. Formal hardware comparisons must use the frozen canonical crop files, rather than independently
+> regenerating crops on each machine."
+>
+> — Part A (Steven), audit of commit a21a692
 
 ## Part A
 

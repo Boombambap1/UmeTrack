@@ -26,6 +26,11 @@ import upstream_compat
 from common import REPO, crop_id, load_config, load_model, rel, sha256_file, update_hashes
 from make_crops import extract_crops
 
+PURPOSE = "calibration"
+PURPOSE_NOTE = (
+    "INT8 calibration only - never evaluation or formal comparison. " + 'Part A audit of a21a692: "Crop IDs match, but the decoding stacks produce different pixels from the same video. The first decoded frame differed by up to two intensity levels. The geometry shim also introduced small additional crop differences. Formal hardware comparisons must use the frozen canonical crop files, rather than independently regenerating crops on each machine."'
+)
+
 DATA_REPO = "facebookresearch/UmeTrack_data"
 DATA_COMMIT = "355df534a1c761ac416427925485b311f22ce50e"
 TEST_USERS = {"user_05", "user_07", "user_09", "user_12", "user_19", "user_23", "user_29", "user_34", "user_39"}
@@ -167,9 +172,9 @@ def main():
     manifest = REPO / args.manifest
     with manifest.open("w", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
-        w.writerow(["row", "recording", "frame", "hand_idx", "cam_idx", "crop_id"])
+        w.writerow(["row", "recording", "frame", "hand_idx", "cam_idx", "crop_id", "purpose"])
         for row, cid in zip(all_rows, ids):
-            w.writerow([*row, cid])
+            w.writerow([*row, cid, PURPOSE])
 
     hashes = {rel(out): sha256_file(out), rel(manifest): sha256_file(manifest)}
     for recording in RECORDINGS:
@@ -179,7 +184,8 @@ def main():
     update_hashes(REPO / args.hashes, hashes)
 
     meta = {
-        "purpose": "INT8 calibration only; must not overlap evaluation clips",
+        "purpose": PURPOSE,
+        "purpose_note": PURPOSE_NOTE,
         "data_commit": DATA_COMMIT,
         "recordings": per_rec,
         "users": sorted(users),

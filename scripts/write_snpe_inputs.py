@@ -4,6 +4,9 @@ Preprocessing follows the encoder contract (uint8 / 255 -> float32 [1,1,96,96] N
 layout is NOT assumed: pass --input-layout and --input-dims exactly as snpe-dlc-info reports them.
 For C=1, NHWC [1,96,96,1] and NCHW [1,1,96,96] have identical bytes, but the transpose is still
 done explicitly so the code stays correct if the reported layout ever differs.
+
+DEVELOPMENT ONLY. These inputs are regenerated from Part B's own crops. Formal and smoke comparisons
+must use Part A's frozen raw files as-is: verify and extract them with scripts/canonical_crops.py.
 """
 
 import argparse
@@ -70,7 +73,14 @@ def main():
     ap.add_argument("--board-prefix", default="inputs", help="path prefix used in input_list.txt on the board")
     ap.add_argument("--roundtrip-manifest", default="manifests/crops_d6_roundtrip.csv")
     ap.add_argument("--hashes", default="manifests/hashes.txt")
+    ap.add_argument("--purpose", choices=["dev", "formal", "smoke"], default="dev")
     args = ap.parse_args()
+    if args.purpose != "dev":
+        raise SystemExit(
+            f"refusing --purpose {args.purpose}: formal/smoke inputs are Part A's frozen raw files, never "
+            "regenerated. Verify and extract them with scripts/canonical_crops.py --set "
+            f"{args.purpose} --archive <zip> --out-dir <new dir>"
+        )
 
     cfg = load_config(REPO / args.config)
     crops = np.load(REPO / args.crops)
@@ -88,14 +98,15 @@ def main():
     rt.parent.mkdir(parents=True, exist_ok=True)
     with rt.open("w", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
-        w.writerow(["idx", "raw_file", "row", "recording", "frame", "hand_idx", "cam_idx", "crop_id", "raw_sha256"])
+        w.writerow(["idx", "raw_file", "row", "recording", "frame", "hand_idx", "cam_idx", "crop_id", "raw_sha256", "purpose"])
         for i, (path, row) in enumerate(written):
             m = manifest[row]
             cid = crop_id(m["recording"], m["frame"], m["hand_idx"], m["cam_idx"])
-            w.writerow([i, path.name, row, m["recording"], m["frame"], m["hand_idx"], m["cam_idx"], cid, sha256_file(path)])
+            w.writerow([i, path.name, row, m["recording"], m["frame"], m["hand_idx"], m["cam_idx"], cid, sha256_file(path), "development"])
 
     input_list = out_dir / "input_list.txt"
     meta = {
+        "purpose": "development only - not a formal comparison (formal/smoke use Part A's frozen crops)",
         "input_name": cfg["encoder"]["input"]["name"],
         "input_layout": args.input_layout,
         "input_dims": dims,

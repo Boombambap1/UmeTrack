@@ -4,6 +4,9 @@ Crop placement follows upstream run_eval_known_skeleton.py: ground-truth poses f
 recording's json -> HandTracker.gen_crop_cameras(min_num_crops=1) -> _warp_image per
 (hand, camera), in the same order as HandTracker._make_inputs. Every frame is cross-checked
 against upstream _make_inputs: its left_images must equal crops / 255 exactly.
+
+DEVELOPMENT ONLY. Crops made here are not the canonical crops: formal comparisons use Part A's frozen
+crop files (scripts/canonical_crops.py). See PURPOSE_NOTE.
 """
 
 import argparse
@@ -18,6 +21,11 @@ import torch
 import pytorch3d_shim
 import upstream_compat
 from common import REPO, load_config, load_model, rel, sha256_file, update_hashes
+
+PURPOSE = "development"
+PURPOSE_NOTE = (
+    "Development only - not for formal comparisons. " + 'Part A audit of a21a692: "Crop IDs match, but the decoding stacks produce different pixels from the same video. The first decoded frame differed by up to two intensity levels. The geometry shim also introduced small additional crop differences. Formal hardware comparisons must use the frozen canonical crop files, rather than independently regenerating crops on each machine."'
+)
 
 
 def extract_crops(model, recording_mp4: Path, recording: str, n_frames=None, frame_stride=1, max_crops=None):
@@ -111,8 +119,8 @@ def main():
     manifest.parent.mkdir(parents=True, exist_ok=True)
     with manifest.open("w", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
-        w.writerow(["row", "recording", "frame", "hand_idx", "cam_idx"])
-        w.writerows(rows)
+        w.writerow(["row", "recording", "frame", "hand_idx", "cam_idx", "purpose"])
+        w.writerows([(*r, PURPOSE) for r in rows])
 
     hashes = {
         rel(mp4): sha256_file(mp4),
@@ -124,6 +132,8 @@ def main():
 
     frames = sorted({r[2] for r in rows})
     meta = {
+        "purpose": PURPOSE,
+        "purpose_note": PURPOSE_NOTE,
         "recording": recording,
         "data_commit": "355df534a1c761ac416427925485b311f22ce50e",
         "n_crops": int(crops.shape[0]),

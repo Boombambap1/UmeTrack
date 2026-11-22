@@ -60,12 +60,26 @@ The tensor names above are the ONNX names. The DLC's names, shapes and layouts m
 | --- | --- | --- | --- | --- |
 | Formal set | Part A | 335 | user_19 and user_23 `recording_00`, frames 0–49 (`manifests/reference-clips.json`); package `manifests/qualcomm-input-package.json` | Formal board-vs-reference comparison and pose replay (8.961398 mm paired subset) |
 | Smoke set | Part A | 7 | Frame 0 of both frozen clips (`manifests/smoke-exchange.json`) | First conversion/layout check on the board |
-| Development set | Part B | 60 | user_19 `recording_00`, frames 0–19 (`manifests/crops_d5.csv`) | Development only: ONNX-vs-PyTorch parity and Mac-side script tests |
-| Calibration set | Part B | 184 | Training users 15 and 16, `real/separate_hand/training/.../recording_00`, every 10th frame (`manifests/calibration.csv`) | INT8 calibration only; these users appear in no testing split |
+| Development set | Part B | 60 | user_19 `recording_00`, frames 0–19 (`manifests/crops_d5.csv`, `purpose` = development) | **Development only**: ONNX-vs-PyTorch parity and Mac-side script tests |
+| Calibration set | Part B | 184 | Training users 15 and 16, `real/separate_hand/training/.../recording_00`, every 10th frame (`manifests/calibration.csv`, `purpose` = calibration) | **INT8 calibration only**; these users appear in no testing split |
 
-Formal comparisons use Part A's frozen crops, never regenerated ones. The development set was regenerated in
-Part B's environment (different package versions and the pytorch3d stand-in) and is not a substitute. Its
-frame 0 crop IDs match the smoke set's user_19 IDs.
+Formal comparisons use Part A's frozen crops, never regenerated ones. Part B's development and calibration
+sets were regenerated in Part B's environment and are not a substitute:
+
+> "Crop IDs match, but the decoding stacks produce different pixels from the same video. The first decoded
+> frame differed by up to two intensity levels. The geometry shim also introduced small additional crop
+> differences. Formal hardware comparisons must use the frozen canonical crop files, rather than independently
+> regenerating crops on each machine."
+>
+> — Part A (Steven), audit of commit a21a692
+
+The development set's frame 0 crop IDs match the smoke set's user_19 IDs; the pixels are not assumed to.
+
+Enforcement: `scripts/canonical_crops.py` verifies Part A's archive, package manifest, input list and every raw
+input against the sha256 values in `manifests/qualcomm-input-package.json` (formal) or
+`manifests/smoke-exchange.json` (smoke) and extracts them unchanged. `scripts/read_snpe_outputs.py --purpose
+formal|smoke` refuses to run unless that verified package re-checks; `--purpose dev` (default) is labelled
+"development only". `scripts/write_snpe_inputs.py` only writes development inputs.
 
 Part B's CSV manifests store the same identity as columns: `recording` (dataset-relative path),
 `frame`, `hand_idx`, `cam_idx`, plus the `crop_id` string above

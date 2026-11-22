@@ -5,6 +5,11 @@ snpe-dlc-info reports them. Result_<i> is matched to line i of input_list.txt, w
 the round-trip manifest written by write_snpe_inputs.py; reference features are then looked up by
 crop_id, not by position. Compares against tolerances.board_cpu_vs_onnx (never changed here).
 
+--purpose dev (default) uses Part B's regenerated development crops and is labelled "development only".
+--purpose formal|smoke requires --canonical-inputs: a directory made by scripts/canonical_crops.py whose
+raw inputs, input list and package manifest are re-verified against Part A's pinned sha256 values; crop
+IDs then come from that verified package, and anything that does not verify is refused.
+
 Two separate verdicts:
   numeric_match    - every check within tolerance
   backend_verified - the ACTUAL runtime parsed from the snpe-net-run log equals the requested one
@@ -22,6 +27,7 @@ from pathlib import Path
 import numpy as np
 
 from check_onnx_parity import compare
+import canonical_crops
 from common import REPO, crop_id, load_config, rel, sha256_file
 from write_snpe_inputs import LAYOUTS, parse_dims
 
@@ -119,9 +125,12 @@ def match_inputs(rt_rows, input_list: Path):
 
 
 def reference_rows(ref_manifest: Path, ids):
-    """Map crop_ids to rows of the reference feature array via its crop manifest."""
+    """Map crop_ids to rows of the reference feature array via its crop manifest (crop_id column or derived)."""
     with ref_manifest.open() as f:
-        by_id = {crop_id(r["recording"], r["frame"], r["hand_idx"], r["cam_idx"]): int(r["row"]) for r in csv.DictReader(f)}
+        by_id = {
+            (r.get("crop_id") or crop_id(r["recording"], r["frame"], r["hand_idx"], r["cam_idx"])): int(r["row"])
+            for r in csv.DictReader(f)
+        }
     missing = [i for i in ids if i not in by_id]
     if missing:
         raise SystemExit(f"crop_ids not in {ref_manifest}: {missing[:3]}")
@@ -138,6 +147,8 @@ def _markdown(s: dict) -> str:
     c, o, b = s["checks"], s["overall"], s["backend"]
     lines = [
         "# D6 — RB5 vs ONNX Runtime encoder features",
+        "",
+        f"**Purpose: {s['purpose_label']}**",
         "",
         f"**Result: {verdict_line(s)}** on {s['n_crops']} crops.",
         "",
@@ -189,14 +200,31 @@ def main():
     ap.add_argument("--run-log", required=True, help="snpe-net-run log; the actual runtime is parsed from it")
     ap.add_argument("--out-dir", default="results/board_cpu_d6")
     ap.add_argument("--features-out", default="artifacts/reference/board_cpu_d6_features.npy")
+    ap.add_argument("--purpose", choices=["dev", "formal", "smoke"], default="dev")
+    ap.add_argument("--canonical-inputs", default=None, help="for formal/smoke: dir made by scripts/canonical_crops.py")
     args = ap.parse_args()
 
     cfg = load_config(REPO / args.config)
     output_file = args.output_file or f"{cfg['encoder']['output']['name']}.raw"
     dims = parse_dims(args.output_dims)
-    with (REPO / args.roundtrip_manifest).open() as f:
-        rt_rows = list(csv.DictReader(f))
-    ids = match_inputs(rt_rows, REPO / args.input_list)
+    canonical = None
+    if args.purpose == "dev":
+        with (REPO / args.roundtrip_manifest).open() as f:
+            rt_rows = list(csv.DictReader(f))
+        ids = match_inputs(rt_rows, REPO / args.input_list)
+        input_list = REPO / args.input_list
+        purpose_label = "development only - Part B regenerated crops, not a formal comparison"
+    else:
+        if not args.canonical_inputs:
+            raise SystemExit(f"--purpose {args.purpose} requires --canonical-inputs (Part A's verified frozen crops)")
+        pkg = REPO / args.canonical_inputs
+        try:
+            canonical = canonical_crops.verify_extracted(pkg, args.purpose)
+        except canonical_crops.CanonicalError as e:
+            raise SystemExit(f"refusing --purpose {args.purpose}: {e}")
+        input_list = pkg / "input_list.txt"
+        ids = [r["crop_id"] for r in canonical["inputs"]]
+        purpose_label = f"{args.purpose} - Part A frozen crops verified against {canonical['pinned']['manifest']}"
     ref_rows = reference_rows(REPO / args.reference_manifest, ids)
 
     board = read_outputs(REPO / args.outputs_dir, len(ids), output_file, dims, args.output_layout)
@@ -224,8 +252,11 @@ def main():
         "output_file": output_file,
         "output_dims": dims,
         "output_layout": args.output_layout,
-        "input_list": rel(REPO / args.input_list),
-        "input_list_sha256": sha256_file(REPO / args.input_list),
+        "purpose": args.purpose,
+        "purpose_label": purpose_label,
+        "canonical": None if canonical is None else canonical["pinned"],
+        "input_list": rel(input_list),
+        "input_list_sha256": sha256_file(input_list),
         "reference": rel(REPO / args.reference),
         "reference_sha256": sha256_file(REPO / args.reference),
         "run_log": rel(run_log),
@@ -248,6 +279,7 @@ def main():
     np.save(feats, board)
 
     c, o = result["checks"], result["overall"]
+    print(f"[board] purpose: {purpose_label}")
     print(f"[board] {verdict_line(summary)}: {len(ids)} crops")
     print(f"[board] numeric_match {numeric_match}: max_abs worst {c['max_abs']['worst']:.3e} (limit {c['max_abs']['limit']:.1e}); "
           f"rel_l2 worst crop {c['rel_l2_per_crop']['worst']:.3e} (limit {c['rel_l2_per_crop']['limit']:.1e})")
