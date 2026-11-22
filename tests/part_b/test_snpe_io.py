@@ -230,3 +230,61 @@ def test_main_both_verdicts_true_passes(tmp_path):
     code, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n")
     assert s["numeric_match"] and s["backend_verified"] and s["pass"] and code == 0
     assert [r["crop_id"].split(":")[1] for r in s["per_crop"]] == ["000002", "000000", "000001"]
+
+
+# --- Steven's re-check of ec34f61: runtime evidence must show what EXECUTED -----------------------
+
+def _verified(text, requested, diag=None, tmp_path=None):
+    from read_snpe_outputs import backend_check
+
+    log = tmp_path / "net-run.log"
+    log.write_text(text)
+    diag_path = None
+    if diag is not None:
+        diag_path = tmp_path / "diag.txt"
+        diag_path.write_text(diag)
+    return backend_check(log, requested, diag_path) if diag is not None else backend_check(log, requested)
+
+
+def test_bypass_selected_then_fallback_is_not_verified(tmp_path):
+    r = _verified("Runtime selected: GPU\nGPU unavailable; falling back to CPU\n", "gpu", tmp_path=tmp_path)
+    assert r["backend_verified"] is False
+
+
+def test_bypass_command_line_only_is_not_verified(tmp_path):
+    r = _verified("snpe-net-run --container encoder.dlc --input_list input_list.txt --use_gpu\n", "gpu", tmp_path=tmp_path)
+    assert r["backend_verified"] is False
+
+
+def test_bypass_request_only_text_is_not_verified(tmp_path):
+    for text in ("Requested runtime: GPU\n", "requested runtime = DSP\n", "$ snpe-net-run --runtime_order dsp\n",
+                 "+ snpe-net-run --container m.dlc --use_dsp   # runtime: DSP\n"):
+        requested = "dsp" if "DSP" in text.upper() else "gpu"
+        r = _verified(text, requested, tmp_path=tmp_path)
+        assert r["backend_verified"] is False, text
+
+
+def test_negative_lines_override_positive_evidence(tmp_path):
+    for bad in ("DSP runtime not supported", "Failed to create DSP runtime", "error: could not initialize GPU",
+                "Runtime DSP is not available", "fallback to CPU enabled"):
+        r = _verified(f"Runtime: DSP\n{bad}\n", "dsp", tmp_path=tmp_path)
+        assert r["backend_verified"] is False, bad
+
+
+def test_positive_stdout_evidence_still_verifies(tmp_path):
+    r = _verified("Loading model\nRuntime: CPU\nFinished executing 8 inputs\n", "cpu", tmp_path=tmp_path)
+    assert r["backend_verified"] is True and r["source"] == "stdout"
+
+
+def test_diag_runtime_preferred_over_stdout(tmp_path):
+    diag = "Layer 0 (conv1) Runtime: CPU\nLayer 1 (relu1) Runtime: CPU\n"
+    r = _verified("Runtime: GPU\n", "gpu", diag=diag, tmp_path=tmp_path)
+    assert r["backend_verified"] is False and r["actual_runtime"] == "CPU" and r["source"] == "diag"
+    r = _verified("", "cpu", diag=diag, tmp_path=tmp_path)
+    assert r["backend_verified"] is True and r["source"] == "diag"
+
+
+def test_diag_mixed_layers_not_verified(tmp_path):
+    diag = "Layer 0 (conv1) Runtime: DSP\nLayer 1 (relu1) Runtime: CPU\n"
+    r = _verified("Runtime: DSP\n", "dsp", diag=diag, tmp_path=tmp_path)
+    assert r["backend_verified"] is False

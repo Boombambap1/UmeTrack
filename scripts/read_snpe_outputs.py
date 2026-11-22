@@ -13,8 +13,11 @@ IDs then come from that verified package, and anything that does not verify is r
 Two separate verdicts:
   numeric_match    - every check within tolerance
   backend_verified - the ACTUAL runtime parsed from the snpe-net-run log equals the requested one
-Overall PASS only if both are true. A missing log, no runtime line, or conflicting runtime lines
-means backend_verified = false (a silent fallback must never be reported as the requested backend).
+Overall PASS only if both are true. backend_verified needs POSITIVE evidence of the runtime that
+executed: per-layer runtimes from --diag-log (snpe-diagview output) when given, else explicit runtime lines
+in the snpe-net-run log. Request-only text (flags such as --use_gpu, echoed commands, "requested runtime")
+is never evidence, and any fallback / unavailable / not supported / failed-to-create / error line makes it
+false whatever else appears. Patterns are strict and still to be confirmed on the first real board logs.
 """
 
 import argparse
@@ -32,21 +35,43 @@ from common import REPO, crop_id, load_config, rel, sha256_file
 from write_snpe_inputs import LAYOUTS, parse_dims
 
 RUNTIMES = ("CPU", "GPU", "GPU_FLOAT16", "DSP", "AIP", "HTP")
-# Conservative patterns for lines that explicitly name the runtime in use. NOT yet confirmed against
-# QAIRT 2.33.2 snpe-net-run output: confirm (and tighten) on the first real board log. They can only
-# fail toward backend_verified = false; they never infer a runtime from the command line or file name.
 _RT = "|".join(sorted(RUNTIMES, key=len, reverse=True))
+# Positive evidence that a runtime EXECUTED. NOT yet confirmed against QAIRT 2.33.2 output: confirm and
+# tighten on the first real board log. Every rule below can only fail toward backend_verified = false.
 RUNTIME_PATTERNS = [
     re.compile(rf"\bruntime\s*(?:selected|used|in use)?\s*[:=]\s*({_RT})\b", re.I),
     re.compile(rf"\busing\s+(?:the\s+)?({_RT})\s+runtime\b", re.I),
     re.compile(rf"\b({_RT})\s+runtime\s+(?:selected|is used|in use)\b", re.I),
 ]
+# Per-layer runtime in snpe-diagview text output of SNPEDiag.log (preferred evidence when given).
+# Format also to be confirmed on the first real diag log.
+DIAG_LAYER_PATTERN = re.compile(rf"\blayer\b.*?\bruntime\s*[:=]?\s*({_RT})\b", re.I)
+# Any of these anywhere in the evidence -> not verified, whatever else appears (deliberately broad).
+NEGATIVE_PATTERN = re.compile(
+    r"fall(?:ing|s)?[\s_-]*back|unavailable|not available|not supported|unsupported|"
+    r"(?:failed|unable|could not|cannot)\s+(?:to\s+)?(?:create|initiali[sz]e|init|load|open|set\s*up|build)|"
+    r"\berror\b",
+    re.I,
+)
+
+
+def _request_only(line: str) -> bool:
+    """Text that only states what was requested (flags, echoed commands, 'requested ...') is never evidence."""
+    l = line.strip()
+    return (
+        "request" in l.lower()
+        or "snpe-net-run" in l
+        or l.startswith(("$", "+ ", ">", "#"))
+        or re.search(r"(?:^|\s)--?[A-Za-z_]", l) is not None
+    )
 
 
 def parse_runtime(log_text):
-    """Return (runtime, evidence_lines). runtime is None unless every matching line names the same one."""
+    """Return (runtime, evidence_lines) from stdout text; runtime is None unless all evidence agrees."""
     found, evidence = set(), []
     for line in (log_text or "").splitlines():
+        if _request_only(line):
+            continue
         for pat in RUNTIME_PATTERNS:
             m = pat.search(line)
             if m:
@@ -56,20 +81,49 @@ def parse_runtime(log_text):
     return (found.pop() if len(found) == 1 else None), evidence
 
 
-def backend_check(run_log: Path, requested: str):
-    if run_log is None or not run_log.exists():
-        return {"backend_verified": False, "actual_runtime": None, "reason": "no snpe-net-run log", "evidence": []}
-    runtime, evidence = parse_runtime(run_log.read_text(errors="replace"))
-    if runtime is None:
-        reason = "conflicting runtime lines in log" if evidence else "no runtime line found in log"
-        return {"backend_verified": False, "actual_runtime": None, "reason": reason, "evidence": evidence}
-    ok = runtime == requested.upper()
-    return {
-        "backend_verified": ok,
-        "actual_runtime": runtime,
-        "reason": "log runtime matches request" if ok else f"requested {requested.upper()}, log says {runtime}",
-        "evidence": evidence,
-    }
+def parse_diag(diag_text):
+    """Return (runtime, layer_lines) from per-layer diag output; None unless every layer names the same runtime."""
+    found, evidence = set(), []
+    for line in (diag_text or "").splitlines():
+        m = DIAG_LAYER_PATTERN.search(line)
+        if m:
+            found.add(m.group(1).upper())
+            evidence.append(line.strip())
+    return (found.pop() if len(found) == 1 else None), evidence
+
+
+def negative_lines(*texts):
+    return [l.strip() for t in texts for l in (t or "").splitlines() if NEGATIVE_PATTERN.search(l)]
+
+
+def backend_check(run_log: Path, requested: str, diag_log: Path = None):
+    """backend_verified only with positive evidence of the runtime that executed and no negative line."""
+    out = {"backend_verified": False, "actual_runtime": None, "source": None, "evidence": [], "negative": []}
+    log_text = run_log.read_text(errors="replace") if run_log is not None and run_log.exists() else None
+    diag_text = diag_log.read_text(errors="replace") if diag_log is not None and diag_log.exists() else None
+    if diag_log is not None and diag_text is None:
+        return {**out, "reason": f"diag log {diag_log} not found"}
+    if log_text is None and diag_text is None:
+        return {**out, "reason": "no snpe-net-run log"}
+    out["negative"] = negative_lines(log_text, diag_text)
+    if diag_text is not None:
+        runtime, evidence = parse_diag(diag_text)
+        out.update(source="diag", evidence=evidence)
+        if runtime is None:
+            reason = "diag layers name different runtimes" if evidence else "no per-layer runtime in diag log"
+            return {**out, "reason": reason}
+    else:
+        runtime, evidence = parse_runtime(log_text)
+        out.update(source="stdout", evidence=evidence)
+        if runtime is None:
+            reason = "conflicting runtime lines in log" if evidence else "no execution-runtime line in log"
+            return {**out, "reason": reason}
+    out["actual_runtime"] = runtime
+    if out["negative"]:
+        return {**out, "reason": f"log reports fallback/unavailable/error: {out['negative'][0]!r}"}
+    if runtime != requested.upper():
+        return {**out, "reason": f"requested {requested.upper()}, {out['source']} says {runtime}"}
+    return {**out, "backend_verified": True, "reason": f"{out['source']} runtime matches request"}
 
 
 def to_nchw(arr: np.ndarray, layout: str) -> np.ndarray:
@@ -169,7 +223,8 @@ def _markdown(s: dict) -> str:
         "-> explicit transpose to NCHW [1,72,6,6]. Result_<i> matched to input_list line i, reference by crop_id.",
         f"Reference: `{s['reference']}` sha256 `{s['reference_sha256']}`.",
         f"Run log: `{s['run_log']}` sha256 `{s['run_log_sha256']}`.",
-        "Runtime evidence lines: " + ("; ".join(f"`{e}`" for e in b["evidence"]) if b["evidence"] else "none"),
+        f"Runtime evidence (source: {b['source']}): " + ("; ".join(f"`{e}`" for e in b["evidence"][:5]) if b["evidence"] else "none"),
+        "Negative lines: " + ("; ".join(f"`{e}`" for e in b["negative"][:5]) if b["negative"] else "none"),
         "",
         "## Per crop",
         "",
@@ -198,6 +253,7 @@ def main():
     ap.add_argument("--torch-reference", default="artifacts/reference/torch_features.npy")
     ap.add_argument("--requested-runtime", default="cpu")
     ap.add_argument("--run-log", required=True, help="snpe-net-run log; the actual runtime is parsed from it")
+    ap.add_argument("--diag-log", default=None, help="snpe-diagview text output of SNPEDiag.log (preferred runtime evidence)")
     ap.add_argument("--out-dir", default="results/board_cpu_d6")
     ap.add_argument("--features-out", default="artifacts/reference/board_cpu_d6_features.npy")
     ap.add_argument("--purpose", choices=["dev", "formal", "smoke"], default="dev")
@@ -240,7 +296,8 @@ def main():
         "rel_l2": float(np.linalg.norm(board - torch_ref) / np.linalg.norm(torch_ref)),
     }
     run_log = REPO / args.run_log
-    backend = backend_check(run_log, args.requested_runtime)
+    diag_log = REPO / args.diag_log if args.diag_log else None
+    backend = backend_check(run_log, args.requested_runtime, diag_log)
     numeric_match = bool(result["pass"])
     summary = {
         "pass": numeric_match and backend["backend_verified"],
@@ -261,6 +318,8 @@ def main():
         "reference_sha256": sha256_file(REPO / args.reference),
         "run_log": rel(run_log),
         "run_log_sha256": sha256_file(run_log) if run_log.exists() else None,
+        "diag_log": rel(diag_log) if diag_log else None,
+        "diag_log_sha256": sha256_file(diag_log) if diag_log and diag_log.exists() else None,
         "tolerances": cfg["tolerances"]["board_cpu_vs_onnx"],
         "vs_torch": vs_torch,
         **{k: v for k, v in result.items() if k != "pass"},
