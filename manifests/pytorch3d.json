@@ -1,0 +1,14 @@
+{
+  "upstream_url": "https://github.com/facebookresearch/pytorch3d.git",
+  "tag": "V0.7.8",
+  "commit": "75ebeeaea0908c5527e7b1e305fbc7681382db47",
+  "version": "0.7.8",
+  "torch": "2.4.1",
+  "full_cpu_extension": true,
+  "cuda": false,
+  "compiler_flag": "CFLAGS=-Wno-invalid-specialization",
+  "max_jobs": 2,
+  "declared_macos_deployment_target": "14.0",
+  "wheel_platform_tag": "macosx_26_0_arm64",
+  "validation": "scripts/check_reference_dependencies.py passed; pip check passed"
+}

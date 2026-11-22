@@ -1,0 +1,56 @@
+{
+  "execution_kind": "mac-reference-fixture",
+  "layouts": [
+    {
+      "layout": "NCHW",
+      "features": {
+        "execution_kind": "mac-reference-fixture",
+        "crops": 335,
+        "feature_mae": 0.0,
+        "feature_rmse": 0.0,
+        "feature_max_absolute_error": 0.0,
+        "backend_status": "reported in execution.json; runtime logs still require review for fallback",
+        "package_sha256": "ec54349f2aaf1c0231ca40d0861e26e1b6b8fa169f92f21ef24f64510697758c"
+      },
+      "poses": {
+        "execution_kind": "mac-reference-fixture",
+        "tracked_hand_frames": 200,
+        "reference_mpjpe_mm": 8.961397993859494,
+        "imported_mpjpe_mm": 8.961397993859494,
+        "absolute_mpjpe_change_mm": 0.0,
+        "mean_joint_displacement_mm": 0.0,
+        "p95_joint_displacement_mm": 0.0,
+        "max_joint_displacement_mm": 0.0,
+        "masks_and_ground_truth_match": true,
+        "backend_verified": false,
+        "note": "Fixture validates file plumbing only; real runtime/fallback evidence requires review."
+      }
+    },
+    {
+      "layout": "NHWC",
+      "features": {
+        "execution_kind": "mac-reference-fixture",
+        "crops": 335,
+        "feature_mae": 0.0,
+        "feature_rmse": 0.0,
+        "feature_max_absolute_error": 0.0,
+        "backend_status": "reported in execution.json; runtime logs still require review for fallback",
+        "package_sha256": "7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8"
+      },
+      "poses": {
+        "execution_kind": "mac-reference-fixture",
+        "tracked_hand_frames": 200,
+        "reference_mpjpe_mm": 8.961397993859494,
+        "imported_mpjpe_mm": 8.961397993859494,
+        "absolute_mpjpe_change_mm": 0.0,
+        "mean_joint_displacement_mm": 0.0,
+        "p95_joint_displacement_mm": 0.0,
+        "max_joint_displacement_mm": 0.0,
+        "masks_and_ground_truth_match": true,
+        "backend_verified": false,
+        "note": "Fixture validates file plumbing only; real runtime/fallback evidence requires review."
+      }
+    }
+  ],
+  "unit_test_groups_passed": 11
+}

@@ -1,0 +1,126 @@
+{
+  "date": "2026-11-21",
+  "scope": "Board access, staged runtime identity, and built-in backend diagnostics; no UmeTrack encoder execution.",
+  "device": {
+    "os": "Arch Linux ARM",
+    "architecture": "aarch64",
+    "processors": 8,
+    "glibc_package": "2.43+r22+g8362e8ce10b2-2",
+    "gcc_package": "16.1.1+r12+g301eb08fa2c5-1"
+  },
+  "access": {
+    "tailscale": "Running after reconnect with existing preferences",
+    "unprivileged_login": "verified",
+    "staged_runtime_readable_as_unprivileged_account": false,
+    "documented_administrator_access": "verified",
+    "diagnostic_execution_user": "administrator"
+  },
+  "runtime": {
+    "reported_snpe_version": "2.33.2.250410134701_117956",
+    "sha256_by_filename": {
+      "snpe-net-run": "587043a3b6466df57d169f44b8b774f6ccf48e370e771c839d59ab366af90de8",
+      "snpe-platform-validator": "e508dae2500b54948679b2561fb72c8a98cd7a645e1ce25e9cd984e1d9b3ef32",
+      "libSNPE.so": "f43ca6e72c05db526b4cf4336a10bea388fcfea6ccc0fa7e74a98a6ab2d9d9bc",
+      "libPlatformValidatorShared.so": "ec5688fa5cb07e2152ad19a1524803eb3e5826f8c8d9d30be06064c4461c6de3"
+    },
+    "runner_help": "passed",
+    "runner_version": "passed",
+    "validator_help": "passed"
+  },
+  "cpu": {
+    "status": "not tested",
+    "reason": "No matching float encoder DLC or standalone CPU sample model was available in the inspected SDK tree."
+  },
+  "gpu": {
+    "status": "validator crashed",
+    "prerequisites_reported": "Present",
+    "exit_code": 139,
+    "signal": "SIGSEGV",
+    "stage": "RuntimeCheck",
+    "completed_runtime_test": false,
+    "arguments": [
+      "--runtime",
+      "gpu",
+      "--coreVersion",
+      "--libVersion",
+      "--testRuntime",
+      "--targetPath",
+      "<task-temporary-directory>/gpu"
+    ],
+    "interpretation": "Failure of this staged validator/configuration; does not prove GPU hardware is unsupported."
+  },
+  "dsp": {
+    "status": "validator failed",
+    "prerequisites_reported": "Absent",
+    "missing_library": "/usr/lib/libadsprpc.so",
+    "exit_code": 0,
+    "unit_test": "Failed",
+    "csv_overall_result": "Failed",
+    "core_version_reported": "Hexagon Architecture V66",
+    "arguments": [
+      "--runtime",
+      "dsp",
+      "--coreVersion",
+      "--libVersion",
+      "--testRuntime",
+      "--targetPath",
+      "<task-temporary-directory>/dsp"
+    ],
+    "interpretation": "Current runtime library setup is incomplete. Zero process exit code is not a successful validation."
+  },
+  "limits": [
+    "Both checks used the staged library directory via LD_LIBRARY_PATH and administrator access.",
+    "The tests used 12-second command limits; neither timeout limit was reached.",
+    "No runner/model was found in the shared home or /opt bounded search; no DLC was found under the inspected staged SDK tree. This is not a global model inventory.",
+    "No permissions, drivers, accounts, SDK files, or services on the board were changed.",
+    "Task-specific temporary diagnostic directories were created; a GPU core dump was reported and was not retrieved or removed.",
+    "No UmeTrack feature output, latency measurement, or downstream board-vs-Mac accuracy comparison exists yet."
+  ],
+  "next_dependencies": [
+    "Part B float encoder DLC plus conversion SDK build, checkpoint/model hashes and I/O metadata.",
+    "Investigate GPU validator crash and supply the correct DSP RPC/runtime libraries for this board image.",
+    "Stage a matched runtime for the intended benchmark user and verify actual model execution/fallback."
+  ],
+  "private_evidence": [
+    {
+      "path": "artifacts/board-readiness-2026-11-21/board-inspection.txt",
+      "sha256": "bc93648b33ba5c3dae0b62b37be1a3bee89f212086445246598711132420ca8b"
+    },
+    {
+      "path": "artifacts/board-readiness-2026-11-21/runtime-location-inspection.txt",
+      "sha256": "bd4193a76fd7ebe767bd397dd05080bde861446461ee23f8d9179c2c93b31c16"
+    },
+    {
+      "path": "artifacts/board-readiness-2026-11-21/admin-runtime-inspection.txt",
+      "sha256": "cb51e03fc9c42e03314754c58cc74754d487da74abcfe3d27ecb642603239368"
+    },
+    {
+      "path": "artifacts/board-readiness-2026-11-21/runtime-version-validator-help.txt",
+      "sha256": "a7d67dac69925e0ad6c366603773a80b72e5c79f08cf96b0f50fb09c494d7433"
+    },
+    {
+      "path": "artifacts/board-readiness-2026-11-21/gpu-dsp-validator.txt",
+      "sha256": "88d7f1d578ba611fe6177396e8220180a35e3607a91328218eb4c4976d31d60f"
+    },
+    {
+      "path": "artifacts/board-readiness-2026-11-21/runtime-identity-rpc-search.txt",
+      "sha256": "a3510378974408f33fe6a0d1cfa5b7178119edee046f26853acf439a83258332"
+    },
+    {
+      "path": "artifacts/board-readiness-2026-11-21/dsp-validator-result-csv.txt",
+      "sha256": "9c08360e8d750b949044f93504c84a4e9dd9acbbdd17d000d2424b9c28d69baa"
+    },
+    {
+      "path": "artifacts/board-readiness-2026-11-21/umetrack_backend_diagnostics.sh",
+      "sha256": "93efbea3fd4aa81dec45c1a9872e080827dc9834f37f54baf2e68f40f40640b1"
+    },
+    {
+      "path": "artifacts/board-readiness-2026-11-21/umetrack_runtime_help.sh",
+      "sha256": "3796ba3b5cf7a43722e805315b612c183287cac0cb02c7283b11b75ec4b6f6be"
+    },
+    {
+      "path": "artifacts/board-readiness-2026-11-21/umetrack_runtime_identity.sh",
+      "sha256": "b317b2fcd13336fc32112997144018ae875ad5efedbede0659752c197f7ca26f"
+    }
+  ]
+}

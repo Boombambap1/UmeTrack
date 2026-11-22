@@ -1,0 +1,23 @@
+{
+  "execution_kind": "board",
+  "device": null,
+  "sdk_version": null,
+  "conversion_sdk_version": null,
+  "model_format": "dlc",
+  "model_sha256": null,
+  "source_checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d",
+  "requested_backend": "CPU",
+  "reported_backend": null,
+  "output_layout": null,
+  "output_dtype": "<f4",
+  "output_file": null,
+  "package_sha256": "7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8",
+  "input_list_sha256": "2802575e76f6c8aee26d619866b345df3f44f3086ab3830e5c8a01caece9fb74",
+  "command": null,
+  "evidence": [
+    {
+      "file": "runtime.log",
+      "sha256": null
+    }
+  ]
+}

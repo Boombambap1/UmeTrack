@@ -1,0 +1,63 @@
+{
+  "device": "Mac CPU",
+  "threads": 2,
+  "passes": 3,
+  "warmup_frames_per_clip_per_pass": 10,
+  "measured_frame_instances": 240,
+  "unique_measured_frames": 80,
+  "crop_count_histogram": {
+    "3": 75,
+    "2": 45,
+    "4": 120
+  },
+  "stages": {
+    "decode_s": {
+      "median_ms": 6.4902715384960175,
+      "p95_ms": 8.168985659722237,
+      "sum_s": 1.6291615013033152
+    },
+    "crop_selection_s": {
+      "median_ms": 3.8542916299775243,
+      "p95_ms": 4.791920946445316,
+      "sum_s": 0.958244038047269
+    },
+    "prepare_s": {
+      "median_ms": 4.425125080160797,
+      "p95_ms": 5.627160391304638,
+      "sum_s": 0.9758595081511885
+    },
+    "encoder_s": {
+      "median_ms": 12.231750064529479,
+      "p95_ms": 14.142660133074969,
+      "sum_s": 2.9554070397280157
+    },
+    "remaining_model_s": {
+      "median_ms": 1.2383125722408295,
+      "p95_ms": 1.4950794167816637,
+      "sum_s": 0.30516034038737416
+    },
+    "postprocess_s": {
+      "median_ms": 0.04112499300390482,
+      "p95_ms": 0.05583993624895809,
+      "sum_s": 0.010109117720276117
+    },
+    "landmarks_s": {
+      "median_ms": 1.4170834328979254,
+      "p95_ms": 1.7020192928612228,
+      "sum_s": 0.35709804901853204
+    },
+    "total_s": {
+      "median_ms": 29.96035455726087,
+      "p95_ms": 33.896064513828584,
+      "sum_s": 7.191039594355971
+    }
+  },
+  "encoder_fraction_of_pipeline": 0.4109846707070874,
+  "encoder_fraction_of_model": 0.9064088225109537,
+  "mean_encoder_ms_per_crop": 3.717493131733353,
+  "precision": "float32 host tensors",
+  "serial": true,
+  "capture_io_included": false,
+  "scope": "two short clips; startup/label load excluded; decode included; timing hooks add overhead; not RB5 or headset latency",
+  "environment_snapshot_sha256": "03b5d3374acf1f953ecc87818e1927aaecc4a2506741b13271826651ff673cdf"
+}

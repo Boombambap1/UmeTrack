@@ -1,0 +1,8 @@
+{
+  "dataset_commit": "355df534a1c761ac416427925485b311f22ce50e",
+  "source_path": "raw_data/real/separate_hand/testing/user_19/recording_00.mp4",
+  "video_sha256": "8df9d21e1843902a6bceb1750e177bd272aaec9a9cf8968363e6cfac7dd1bc3c",
+  "video_bytes": 82177771,
+  "labels_sha256": "45329893f3c1fa22d99e1ceaf3ffa5c60cdbbe1179d9a2d1b7058017d23c5376",
+  "purpose": "first lexicographic real separate_hand testing recording; smoke evaluation only"
+}

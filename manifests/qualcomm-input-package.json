@@ -1,0 +1,22 @@
+{
+  "purpose": "candidate raw-input handoff, not an executed Qualcomm model",
+  "crops": 335,
+  "input_layout": "NHWC",
+  "input_shape": [
+    1,
+    96,
+    96,
+    1
+  ],
+  "input_bytes_per_crop": 36864,
+  "total_raw_input_bytes": 12349440,
+  "package_sha256": "7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8",
+  "input_list_sha256": "2802575e76f6c8aee26d619866b345df3f44f3086ab3830e5c8a01caece9fb74",
+  "archive_sha256": "927b545cf993512a4c8ac88cf34c6082ac4c559ae7df31d9c0fc96bb06f89225",
+  "archive_bytes": 3807442,
+  "requires_before_board_run": [
+    "confirm DLC IO names/layouts and batch size",
+    "match conversion/runtime SDK builds",
+    "runtime validation and backend evidence"
+  ]
+}

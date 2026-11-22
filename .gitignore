@@ -68,3 +68,6 @@ config.local.*
 *.swp
 *.swo
 *~
+
+# Independent upstream sources restored by scripts/bootstrap_dependencies.py
+/third_party/

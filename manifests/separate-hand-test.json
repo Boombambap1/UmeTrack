@@ -1,0 +1,721 @@
+{
+  "dataset_commit": "355df534a1c761ac416427925485b311f22ce50e",
+  "protocol": "real/separate_hand/testing",
+  "recordings": [
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_00.mp4",
+      "sha256": "8df9d21e1843902a6bceb1750e177bd272aaec9a9cf8968363e6cfac7dd1bc3c",
+      "size_bytes": 82177771
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_01.mp4",
+      "sha256": "ffb76ec276b604eb85e92a4eebab3ee790774022cdee6e40b76b5e3edcce7102",
+      "size_bytes": 80174374
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_02.mp4",
+      "sha256": "bbc923ccd02443b824046fc9113673c362d29fb4e065ff295f8c1a3ba1a397ab",
+      "size_bytes": 79668747
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_03.mp4",
+      "sha256": "4cbbd8176887b5169eb044ebff29c8eb032abe987b4232a3db8be432351b9061",
+      "size_bytes": 78409947
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_04.mp4",
+      "sha256": "86016935e2954bc2e5fe33c53cb88317f372a3e8e3d54f46fc5bdb7802136bf5",
+      "size_bytes": 72964597
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_05.mp4",
+      "sha256": "449993582f1ea3720cad003a826648c86c66ebb1f575f20a672763b126aed6c0",
+      "size_bytes": 77560262
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_06.mp4",
+      "sha256": "e3eca8c2b693f0d6c584fec9c82c69866e063fe9698bca6d02ca5a8dc7b2df56",
+      "size_bytes": 73344593
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_07.mp4",
+      "sha256": "a25a6858c64b276a9a886bc3f24984545e169bdccf4306c1b612b84346722787",
+      "size_bytes": 81780621
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_08.mp4",
+      "sha256": "6d463eb67be52de7e282aa80dec30a97c72e8855ce9044f8d5a014b2a2100b28",
+      "size_bytes": 81500494
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_09.mp4",
+      "sha256": "b901a529e6b19c1481bbbf629062e13637dce8de9452a7cfc0f7d25ddddb72fe",
+      "size_bytes": 76715881
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_10.mp4",
+      "sha256": "2f90b06b24eead22c2de973ca44c55acbda65bae51f9420dc245639852c70585",
+      "size_bytes": 81142534
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_11.mp4",
+      "sha256": "770a301f5522abc047a1edb0a156f810f69d676f5af6ce0c8b5c9a68033bc71e",
+      "size_bytes": 76360231
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_12.mp4",
+      "sha256": "ae66d611fd1917f379b7172131bd5b6fe6bc79a3d274846f49bedab4cb11270d",
+      "size_bytes": 83626094
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_13.mp4",
+      "sha256": "42afd8bdbf09e70ab55bbbc2114432b99012ded1fe69ca373d445cb6d99fefb8",
+      "size_bytes": 78788998
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_14.mp4",
+      "sha256": "a317bafef1e09eded20b4975d022475c2f8f05123e7a8d0e1549ac871c09c2c2",
+      "size_bytes": 83031453
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_15.mp4",
+      "sha256": "3edb2cc54c26d4757eecb8e2d8c880e20bcc7603a027b8f65a6030d5c50afbc7",
+      "size_bytes": 87741336
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_16.mp4",
+      "sha256": "129462c947e61d5d6a1fbfde3df8d133f6caf05f0ad776d407b727cb42797d25",
+      "size_bytes": 84031370
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_17.mp4",
+      "sha256": "e03ce3051eff46125c4e6bfe791ee68a9c1d85ae2037c2a7827199477f6a7e80",
+      "size_bytes": 81819004
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_18.mp4",
+      "sha256": "c3846479b041c6f644d210d4e61a0c7d33aa97572170e8f7a80bf00b496a1244",
+      "size_bytes": 80326359
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_19.mp4",
+      "sha256": "b9d1e24a74758cf26383638232ea34da77d1ebc3fd3483bc70604742d95278a8",
+      "size_bytes": 26497023
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_20.mp4",
+      "sha256": "13639974127dee02623d45a8561e1bf1ea31bd579bc52486ae1c5a2e713e7778",
+      "size_bytes": 82579442
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_21.mp4",
+      "sha256": "bb4d369f9c908e3fa62ca8e7495b141eef89422da427f468c4e6f194de1d90b2",
+      "size_bytes": 77045149
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_22.mp4",
+      "sha256": "f0d2835c667b79313a6254070c48d5ef49702f85ed9b4403d1a52582a5df82fc",
+      "size_bytes": 77252831
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_23.mp4",
+      "sha256": "12173a14c0118249680f60e26e4219b86c1628fadfab9d0ef03db33338806bad",
+      "size_bytes": 80167564
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_24.mp4",
+      "sha256": "015833450d9d16a711f0a010f76d46cb388b97141b9aaa803d243a28aeeabf7c",
+      "size_bytes": 78920853
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_25.mp4",
+      "sha256": "a3e397f867480fc40057bc0db66d5fe32c2e86cb3ff006c94274b0698eee4c39",
+      "size_bytes": 80201248
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_26.mp4",
+      "sha256": "a724f760dd9353c776b728f56aa7605001c62bc41e8e5c2a9c08654dce8ffd4b",
+      "size_bytes": 86261672
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_27.mp4",
+      "sha256": "df020debb0d3b1636facf9b8a4afea2640b260e278ccb315dae79e8adc8be624",
+      "size_bytes": 79807522
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_28.mp4",
+      "sha256": "c47d76c752229dec8d12e085ec604ee30bc643c3d14ea7d27002bc194fd37683",
+      "size_bytes": 79157331
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_00.mp4",
+      "sha256": "bd7a7fc03bd37283d0a04bf62af7aecf6867cdacd16b244348e80e127e4230bf",
+      "size_bytes": 86214483
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_01.mp4",
+      "sha256": "fe10b8017d243a633b02c2c04b0a2a9a2c1b59b978d1b94e543452f211e120f9",
+      "size_bytes": 80494311
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_02.mp4",
+      "sha256": "85c296cced734cb8bcd253add9460b8de78a6bf511be8d9e0356bfc762413293",
+      "size_bytes": 84456138
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_03.mp4",
+      "sha256": "cbaa0ae442e44744e8bcf40799cf0ba5db2a89680773df4a47fd0faecc679258",
+      "size_bytes": 82354382
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_04.mp4",
+      "sha256": "193a86fe62b0f58ddaebfdd025bc27a3a487100123389ffae37a6a77898f33f8",
+      "size_bytes": 79508705
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_05.mp4",
+      "sha256": "c081ac58ea0707b4d1b6fa47ddf20860f7e969af0f9cced24a74716e50160126",
+      "size_bytes": 77301194
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_06.mp4",
+      "sha256": "d3eaab04cc857fd93a7e4a3e6815cc304b58a222998817af1ea1c456dd568d9a",
+      "size_bytes": 78184963
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_07.mp4",
+      "sha256": "45db87600d73738ee96300a002307e1126ef090497068f6059a14e54751f2659",
+      "size_bytes": 83721854
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_08.mp4",
+      "sha256": "4683476153697bf1e61a87da25eac1448cf6a0228bda51ce816fae250c791730",
+      "size_bytes": 79018768
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_09.mp4",
+      "sha256": "c56c19192a1f67a43eb4c12658d37128b2d06615ad71ea86b6f5e42763f01270",
+      "size_bytes": 81388920
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_10.mp4",
+      "sha256": "c4b3e866e46446a0b6ccc5e28b86f67d2792558986c3e648c530a1201a35789c",
+      "size_bytes": 84616752
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_11.mp4",
+      "sha256": "88f3d3e5c4c57e2d61272378174f2fb81aa7c5f3c0d818f2cf0ec9f0735843c3",
+      "size_bytes": 86196075
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_12.mp4",
+      "sha256": "29de14cf6836af9c54e4d6b32c563e5b32978ab26822918a80d5fe81ab3efdc9",
+      "size_bytes": 74585353
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_13.mp4",
+      "sha256": "b54d37e9c6f15bfbe0009e104f4224f93838e086300e435cbff9cfc21a8fd1f1",
+      "size_bytes": 78254886
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_14.mp4",
+      "sha256": "9122b287de74d9dbf5156d96e57a9d9becc37be500ef939886ae39fd7bccf7d9",
+      "size_bytes": 81602260
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_15.mp4",
+      "sha256": "058d3ec24e15f0c833182b6ea139db7a4ba13e33455ef7bc7a74d1af394ba96e",
+      "size_bytes": 78960940
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_16.mp4",
+      "sha256": "3bc3d49f5d71a2d82267a59a838abacf39d50134a703f870bc842a6259509b3b",
+      "size_bytes": 79972280
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_17.mp4",
+      "sha256": "e19852c0b128f611021544ce674940aa3ae3c9a5b4075e81c4fe46d59b58c9be",
+      "size_bytes": 77425739
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_18.mp4",
+      "sha256": "271c104cfd9ecb628ac9a2656969a07b843fd2d6044a1a45fbaa4019762cb517",
+      "size_bytes": 78863420
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_19.mp4",
+      "sha256": "17ef330dc5b80a36a47204517350d7cc9ee2629d4ae73a0600548b439404aac8",
+      "size_bytes": 77664802
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_20.mp4",
+      "sha256": "ea63b0419b97d2b2116c1a0039d35588779e8e2a44849e521a2ea4f9db5c8c98",
+      "size_bytes": 78415071
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_21.mp4",
+      "sha256": "b468449d4c559ada032c7a28f837333129c83df71551da4962652675726f57e0",
+      "size_bytes": 83863970
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_22.mp4",
+      "sha256": "fa5e6e2415e6e21cc32ebe241b5290b2d47861c92a466efa6ef7bcdbaa3466d2",
+      "size_bytes": 82982085
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_23.mp4",
+      "sha256": "14e1f2745dcd99da0b05e6e928a6b2b0afbd0789d0ba7157f382203c83cbd059",
+      "size_bytes": 81722690
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_24.mp4",
+      "sha256": "5e2d5bd6a67f91e11656412252fd6a36f121775d440cf2d1500b1a3039a552a0",
+      "size_bytes": 79724646
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_25.mp4",
+      "sha256": "028bae97a4793127414ae86419b513e2ea4d46ea5321de89a2d34a24acc43263",
+      "size_bytes": 79080506
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_26.mp4",
+      "sha256": "966cb919b3cd570590cd3807d860553e3e093f8c6ff63b532f1ff0749597abbf",
+      "size_bytes": 77200440
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_27.mp4",
+      "sha256": "7bd07b41b8f076ac196a118782f1603b50444a8b261e258e06c2c7d19ed0d372",
+      "size_bytes": 81217942
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_28.mp4",
+      "sha256": "70604bf5d4ef942da7d49cff695cff1fc28a1944278f645998d5b03646789a19",
+      "size_bytes": 83175532
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_00.mp4",
+      "sha256": "3251c56fae16cc6382406b048f15d3d9a9be65ec54d71c2dd14230d9c27ce70f",
+      "size_bytes": 73343902
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_01.mp4",
+      "sha256": "c6afb65c320e1d7f3bdda89ceb40451644f9428a3724469613b2fb09a512f5dc",
+      "size_bytes": 73530566
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_02.mp4",
+      "sha256": "3a88463f890b676087904e1b2bbd32fd55041476b93f1746655c226e1b9db49a",
+      "size_bytes": 73773604
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_03.mp4",
+      "sha256": "00275c2506d57ebc004f96f2bb89b3f852dacb3847737b6a301f006826e7dd84",
+      "size_bytes": 75524114
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_04.mp4",
+      "sha256": "ef10959357fc376fafc6dd6ce6bb159254cd086138d41cbe2fbe60e313fde204",
+      "size_bytes": 76481106
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_05.mp4",
+      "sha256": "8ce8cb39990ceea4a7bcc181d5a6748a4345d599bffe647cb84e48aa63b2a3d5",
+      "size_bytes": 76196845
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_06.mp4",
+      "sha256": "a11fa9e08934d935711d5da3e61128e5af3eb539c8e8c909fdd73fa8d3fcbf59",
+      "size_bytes": 75841715
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_07.mp4",
+      "sha256": "b947aa2347344d600b2f001656bf72497b7345be225823e7165f49bc6c7d35cd",
+      "size_bytes": 78939173
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_08.mp4",
+      "sha256": "1b13f74548576638ca2fa5494795da2f007a778c4519192a2a0d5c392b9a46d1",
+      "size_bytes": 69791356
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_09.mp4",
+      "sha256": "ec921bf11b4d023658f733a9f2c8175314a823f5552fad3e7c8f614e28cfdb17",
+      "size_bytes": 70945268
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_10.mp4",
+      "sha256": "634c151a6cb28e3128274e38eeea99f00da4d08a5ad3314fbd9111ac39fb872a",
+      "size_bytes": 73262261
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_11.mp4",
+      "sha256": "a8ab66cc057107b71f06afcd68a198e6e0f3d6d120440d30e6a629422cfc53e6",
+      "size_bytes": 73487341
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_12.mp4",
+      "sha256": "76e40fb6b64a3b90ef53ed75da285b10be4d43d39089e7614bead9154831f44e",
+      "size_bytes": 77862689
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_13.mp4",
+      "sha256": "87a25268f104eacf772e153d0e9a53048e35b6aaacb5cab5335c5bc5a65c2987",
+      "size_bytes": 68929295
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_14.mp4",
+      "sha256": "7528576c4aba6c303982627c52d7dfd05a0217c502196d218ea513578f3a93d6",
+      "size_bytes": 71093732
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_15.mp4",
+      "sha256": "1c4f74ef299a6c076fb9624866df4912f45b4804e9041f8c1e0e890cfeb9c5fd",
+      "size_bytes": 71207314
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_16.mp4",
+      "sha256": "bc4d80256c4db084b0682b6cc551e03029661084a09add14b8dd7915ecb0ce3e",
+      "size_bytes": 75523041
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_17.mp4",
+      "sha256": "8adcf0895dcf6965b719369b969069258e9877b1d29bd1ae10bb73632bbf90bb",
+      "size_bytes": 81859052
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_18.mp4",
+      "sha256": "2936c7c6d210470bf8038501c7c530b68cc04bdb3a63ae167236c9f83e282c6c",
+      "size_bytes": 70014718
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_19.mp4",
+      "sha256": "24193da6a45b3640a5fa5d5ad00df6997bcbc3abf407ee344fb7d90820a4a57c",
+      "size_bytes": 80808477
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_20.mp4",
+      "sha256": "ed346f4f07b9dad89c2dd108ccb7c2c5e439b3ae92da9ac5fdaca8a3b58a9172",
+      "size_bytes": 68982990
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_21.mp4",
+      "sha256": "651518c1a1e44a6658532eac0f9c78305c45c496105f4d80051f509c6886f3a8",
+      "size_bytes": 73048095
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_22.mp4",
+      "sha256": "54ab2461215788209ebe35aa14d49d0a74fb00793fafa28e52eb5943bb2f79f9",
+      "size_bytes": 71859726
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_23.mp4",
+      "sha256": "ea7a2721b04ad941f06b8a0342cc28c2da1e228d198d554faac29c30bcdad1d0",
+      "size_bytes": 77058222
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_24.mp4",
+      "sha256": "9a55cebb5120e598726089a76ca817aa982af67848f4e107f1291ab6367781cc",
+      "size_bytes": 73122498
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_25.mp4",
+      "sha256": "eacdd7beb0a7cc7067899d80a7d15a968576a1d0bec80a7c727898820201868d",
+      "size_bytes": 79136870
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_26.mp4",
+      "sha256": "5ad00c03f525edc294af703ed9dfa3814cb4f614da242e6867216f6bbfc8cfae",
+      "size_bytes": 78801299
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_27.mp4",
+      "sha256": "8d37c21413ab7e0599317a869ab5fef198d3f66458bb4fe604002a0f2c7c26c7",
+      "size_bytes": 76347750
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_28.mp4",
+      "sha256": "2af0b6d8caffdb3f7f6e1f7ceb97fe9c97095d4174c8feb4c9ae6afaf2d25e44",
+      "size_bytes": 79032177
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_29/recording_29.mp4",
+      "sha256": "c0714fb3a295f126694d5d3e081e4e4acaf682aa3e2ac199b8e2971983b12847",
+      "size_bytes": 77687479
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_00.mp4",
+      "sha256": "d6df468d579db96c33da6edb8737c291fdb51d76f8d4b7db15919ede4943b39e",
+      "size_bytes": 81252923
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_01.mp4",
+      "sha256": "9e9fb2f16e2ceb76cca3dfae4167473adff846c1f1724188bfa6a03cba119dcf",
+      "size_bytes": 81962826
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_02.mp4",
+      "sha256": "785cdfa819ba6c0cee330df66fce972d6ec21c0715710cfae327aa3066236135",
+      "size_bytes": 82258742
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_03.mp4",
+      "sha256": "b8b572f2a7195f11244eee5430b2fa395e34c1b91351a76d2453f9b927c1b405",
+      "size_bytes": 86130592
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_04.mp4",
+      "sha256": "5cb0b5a12a9934690b62f266fafa4afc3e013d3e54e959b5629d46902c5dfa58",
+      "size_bytes": 87603581
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_05.mp4",
+      "sha256": "f09c03715885b73d440ae1f382387d5ca9e1bf8d31aca39abe7bed1bf3ea0d8d",
+      "size_bytes": 87489755
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_06.mp4",
+      "sha256": "bd512a0d74e07d419d97f02dcb5293f0e996d68a99d103d807397e933ce139de",
+      "size_bytes": 76611441
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_07.mp4",
+      "sha256": "ab54cbb37dd1fc1e1ca865e9e2becb98e1cd634ca54a270b878bd56a93537b14",
+      "size_bytes": 84003274
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_08.mp4",
+      "sha256": "f32a03cd79c39d2522963ae24a2b5e1ec8dfdf8f35d1e926f0ea2352a095c5b8",
+      "size_bytes": 83388802
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_09.mp4",
+      "sha256": "131788ce456c801c41d231d6b7dd5721b486f839599559d848e45081b3870e2c",
+      "size_bytes": 80323282
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_10.mp4",
+      "sha256": "f0a2371707a87a837f6f2cfa530d0ceeca393c6a0bef3716f2016bae32ef0670",
+      "size_bytes": 83712768
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_11.mp4",
+      "sha256": "079b074dc2a3e5e1ef09fa46c3fedb68a1bf3ef02fe6184d70b214e0a7e9b524",
+      "size_bytes": 85249499
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_12.mp4",
+      "sha256": "176cd72019ac031d14b406c5e9ecf12993b8a6f951247bbb11ed71a0bf9126a2",
+      "size_bytes": 88715119
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_13.mp4",
+      "sha256": "deaca439a4042a81699238514d4fd1969fcb6343080132caef3ac94c77b95858",
+      "size_bytes": 81259831
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_14.mp4",
+      "sha256": "de3543f9e1a13b9a4d199b083da61568a63715b9da0afd90d24ba9e681399390",
+      "size_bytes": 82104008
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_15.mp4",
+      "sha256": "6bae6e8f47d4068b8fa85a0169795fb47232635bbffcd0ca0aac8d0a866cc60a",
+      "size_bytes": 79626217
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_16.mp4",
+      "sha256": "fe542487564fc3a2a8bc9168922f2c954c94e28c2ab1e884ab02c0239ec1c9d3",
+      "size_bytes": 82832029
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_17.mp4",
+      "sha256": "66ae20674f12a66b951c6dacb6736c09c57df1d0f798bc93c924688734a5afdf",
+      "size_bytes": 81422179
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_18.mp4",
+      "sha256": "5c4e8426c79333d51934f0fe5fb0a031baf7209eb3d5eed676c4fa4c6ed694c4",
+      "size_bytes": 84876127
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_19.mp4",
+      "sha256": "8c1c1ca8a67bfbb11053c3f71ad3f4553a51fd2c0ed2ea1a27dd1832d3fa88de",
+      "size_bytes": 86432083
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_20.mp4",
+      "sha256": "270e6b82106defcfaf1567d53658b7cbf4a1128c7a2ba23a274f6f51a406dd1b",
+      "size_bytes": 81892227
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_21.mp4",
+      "sha256": "bbc5d977e5c2f797e46be4563ce0d65c2926de916c8da032910a43180a4c4812",
+      "size_bytes": 80458317
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_22.mp4",
+      "sha256": "511d1b13510baea9c339458f6f47374f28229f34e6f4c0d88d41c5f6bcddc595",
+      "size_bytes": 82803189
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_23.mp4",
+      "sha256": "3f126f9f2f0735e3166355a633e3d984a7645229874f4d5d1a2536767510a287",
+      "size_bytes": 81649594
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_34/recording_24.mp4",
+      "sha256": "f66db371ff138cad2fcb95a15ae9a6941e7ce81f4f811bb024fe2cbd8602a91f",
+      "size_bytes": 81605669
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_00.mp4",
+      "sha256": "125c20443a262354bb276c22a576bf36791a21659ec877d9b0f2e8aff563229f",
+      "size_bytes": 73186818
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_01.mp4",
+      "sha256": "91969eacf5721762b0cf002e05bbb6fb0eac7957c2820ec474394f9e82c9d70b",
+      "size_bytes": 71829976
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_02.mp4",
+      "sha256": "af0b528037fbc3da4ae104f1f6c5dbb260ae16a448793f7657299f1f25517923",
+      "size_bytes": 78711174
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_03.mp4",
+      "sha256": "5c14b7497f4befdf70ea68b1823892ed01e8dbca1cb3cbc3fb2292de54d1daa9",
+      "size_bytes": 83129029
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_04.mp4",
+      "sha256": "7b3ce6a6ee9a3f1e38b417529528ab64adba6ef4dbc0c8ad00ee1c402eae6ec7",
+      "size_bytes": 84695893
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_05.mp4",
+      "sha256": "f67fe00dc605d489beba66c3f575f89bdc521d7bfd517a02b579e17b0138fae3",
+      "size_bytes": 83360794
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_06.mp4",
+      "sha256": "a9190bb572ad019be3fb6db2b9687f300aa3bfa3b1b0c0437a0748f2f6527f11",
+      "size_bytes": 76197657
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_07.mp4",
+      "sha256": "2c6d09d51d97390706643d95f6610c4d591f200b725fb23ad7837745cab59690",
+      "size_bytes": 80916889
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_08.mp4",
+      "sha256": "a261a23c373352453e3ef7a945752bbe641027bb0979acff26bbacf90ac6e62c",
+      "size_bytes": 60281900
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_09.mp4",
+      "sha256": "04221cd7071a704c8bc7bede04166e4e5c9772343dbbd790f7730c275a304c2f",
+      "size_bytes": 71298721
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_10.mp4",
+      "sha256": "13bb2638a9b015e7bd12a622a3084f9c0e6de4f534d5cf288bbaae68a5329b21",
+      "size_bytes": 71961678
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_11.mp4",
+      "sha256": "9ed4969f40a7dcc2c236a545a0c2b883328f916e0796ef6c26870ba71829d7e0",
+      "size_bytes": 68957798
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_12.mp4",
+      "sha256": "6e264b85d458a8fed02cce9532ef41119e091fac6164076e084c65ed59204257",
+      "size_bytes": 80870537
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_13.mp4",
+      "sha256": "f3291142630e4fbb358200ac3dc0b7a7d22f9acfe523b8daeb2441f153ca73f4",
+      "size_bytes": 79056302
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_14.mp4",
+      "sha256": "8dd73774ca8b0d45a1ae50ea22b73c26431ec1d982091daa7921201cf8e2b7af",
+      "size_bytes": 75599092
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_15.mp4",
+      "sha256": "9de4bb92664c4cbb4ff490dc37dc16a6ef9298e4059d7062a67da5f90a3168d8",
+      "size_bytes": 77075250
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_16.mp4",
+      "sha256": "1e8904cf37b4498601a5412bc20ab4ff1cbbd67395554d6d6c340f025549a1a4",
+      "size_bytes": 79429645
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_17.mp4",
+      "sha256": "728476bcdc0a569f8a37491b4122346fcaf92621eff7fe4b3c312cececef2739",
+      "size_bytes": 80235659
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_18.mp4",
+      "sha256": "796207d54d30df32f2e80cfd0186247615363a2b5d6fe8b3831c0617455f6e81",
+      "size_bytes": 80029636
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_19.mp4",
+      "sha256": "4f89960b796997c14cd3cba47f28328090d96643429fa71f80e3897a913859bc",
+      "size_bytes": 82011095
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_20.mp4",
+      "sha256": "e120ac776060480fbccd9c3836ade3a0a43cfdf3734b07c8ed296d1e614ea46e",
+      "size_bytes": 77366388
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_21.mp4",
+      "sha256": "8007df0ac5ddefd0efd45c32d55fcc229d5aaa4a52cf6948a338581d0c320d76",
+      "size_bytes": 76105951
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_22.mp4",
+      "sha256": "5c2ede401ddfc3e76ac7025da62779502ee813ecc4553d85c39931836a340bd1",
+      "size_bytes": 81764033
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_23.mp4",
+      "sha256": "7176556d16b15b2c1f25dba7941cf89defb93c7b996cff3b7f615ade2adc0ef0",
+      "size_bytes": 79468954
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_24.mp4",
+      "sha256": "5d8ea4a41feedf8c0a02438495c5aee1105154c9d6c24529b736b4e764fa319e",
+      "size_bytes": 83029724
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_25.mp4",
+      "sha256": "3c16d9e3d606a7eedd5d1d10fc4d07087c0b89b1de4e7e8821bebbaa5363ed4b",
+      "size_bytes": 79700997
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_26.mp4",
+      "sha256": "96734994e68d31b491a685bd7dbfc971089e9c088408a1d2d634b72d8a1374af",
+      "size_bytes": 78695684
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_27.mp4",
+      "sha256": "161cffb6d26eccbc9b89a44381a6757652b3ca7b2249dbca51613eaacd06da5f",
+      "size_bytes": 78457132
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_28.mp4",
+      "sha256": "bbd392dc73e88aa6298f4c67e660786b9877a6d385abd0db27bf883b5139bd1f",
+      "size_bytes": 79120278
+    },
+    {
+      "source_path": "raw_data/real/separate_hand/testing/user_39/recording_29.mp4",
+      "sha256": "0d7c41207768dd46b977766d762f63bbdbf2c8741555d4b5d11a10a508b682af",
+      "size_bytes": 81583077
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "upstream_url": "https://github.com/facebookresearch/UmeTrack.git",
+  "upstream_commit": "e263ec0844abf73457468a050a75853444d33d69",
+  "checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d",
+  "checkpoint_bytes": 17128329,
+  "data_submodule_commit": "355df534a1c761ac416427925485b311f22ce50e",
+  "data_downloaded": true,
+  "full_evaluation_ready": true,
+  "dataset_scope": "Complete real separate_hand testing split: 143 recordings; manifests/separate-hand-test.json",
+  "full_reference_completed": true,
+  "reference_result": "results/separate-hand-baseline.json"
+}

@@ -1,0 +1,24 @@
+{
+  "purpose": "first lexicographic real separate_hand testing recording; smoke evaluation only",
+  "protocol": "known_skeleton/separate_hand",
+  "device": "cpu",
+  "threads": 2,
+  "frames": 451,
+  "total_hand_frame_slots": 902,
+  "tracked_hand_frames": 902,
+  "tracked_hand_frames_by_hand": [
+    451,
+    451
+  ],
+  "coverage_all_slots": 1.0,
+  "mean_joint_error_mm": 9.511602648327703,
+  "wall_seconds_including_load_decode_and_io": 12.666439667111263,
+  "input_sha256": "8df9d21e1843902a6bceb1750e177bd272aaec9a9cf8968363e6cfac7dd1bc3c",
+  "checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d",
+  "crop_selection": "upstream ground-truth-assisted",
+  "dataset_commit": "355df534a1c761ac416427925485b311f22ce50e",
+  "source_path": "raw_data/real/separate_hand/testing/user_19/recording_00.mp4",
+  "video_sha256": "8df9d21e1843902a6bceb1750e177bd272aaec9a9cf8968363e6cfac7dd1bc3c",
+  "video_bytes": 82177771,
+  "labels_sha256": "45329893f3c1fa22d99e1ceaf3ffa5c60cdbbe1179d9a2d1b7058017d23c5376"
+}

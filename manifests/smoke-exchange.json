@@ -1,0 +1,22 @@
+{
+  "purpose": "Local early encoder exchange; no Qualcomm execution.",
+  "crops": 7,
+  "source_frames": 2,
+  "input_layout": "NHWC candidate; confirm DLC metadata",
+  "reference_output_layout": "NCHW",
+  "archive": "artifacts/qualcomm-smoke-2026-11-21.zip",
+  "archive_bytes": 151000,
+  "archive_sha256": "fcbcad10e9b53795451506380734bc9f8ba6f883df725230e9c0b4e52eafbdac",
+  "manifest_sha256": "cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5",
+  "input_list_sha256": "59c41769cf063f13610fa12fe3bc8102c0be74bcc407c383b19b693c37bc29bb",
+  "source_package_sha256": "7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8",
+  "crop_ids": [
+    "user_19-recording_00:000000:hand0:camera1",
+    "user_19-recording_00:000000:hand0:camera2",
+    "user_19-recording_00:000000:hand1:camera2",
+    "user_23-recording_00:000000:hand0:camera1",
+    "user_23-recording_00:000000:hand0:camera2",
+    "user_23-recording_00:000000:hand1:camera1",
+    "user_23-recording_00:000000:hand1:camera2"
+  ]
+}

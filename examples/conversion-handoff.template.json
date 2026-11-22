@@ -1,0 +1,63 @@
+{
+  "status": "template \u2014 fill from actual conversion evidence",
+  "lane": "Part B float encoder delivery",
+  "source": {
+    "upstream_commit": "e263ec0844abf73457468a050a75853444d33d69",
+    "checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d"
+  },
+  "conversion_host": {
+    "os": null,
+    "architecture": null
+  },
+  "sdk": {
+    "conversion_release_build": null,
+    "converter_version_output": null,
+    "observed_board_runner_version": "2.33.2.250410134701_117956",
+    "intended_runtime_release_build": null
+  },
+  "export": {
+    "helper_path": null,
+    "helper_sha256": null,
+    "onnx_path": null,
+    "onnx_sha256": null,
+    "opset": null,
+    "command": null
+  },
+  "float_dlc": {
+    "artifact_location": null,
+    "sha256": null,
+    "conversion_command": null
+  },
+  "io": {
+    "batch_size": 1,
+    "input": {
+      "name": null,
+      "layout": null,
+      "shape": null,
+      "dtype": null
+    },
+    "output": {
+      "name": null,
+      "layout": null,
+      "shape": null,
+      "dtype": null,
+      "raw_output_filename": null
+    }
+  },
+  "real_crop_validation": {
+    "source_manifest_sha256": null,
+    "declared_atol": null,
+    "declared_rtol": null,
+    "feature_mae": null,
+    "feature_rmse": null,
+    "feature_max_absolute_error": null,
+    "result": null
+  },
+  "target_setup": {
+    "instructions_location": null,
+    "runtime_artifact_hashes_location": null,
+    "intended_execution_user": null
+  },
+  "evidence": [],
+  "note": "No null field is evidence of completion. This checklist does not replace the execution.json required for returned board outputs. Keep secrets and SDK/model binaries outside Git."
+}

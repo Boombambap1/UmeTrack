@@ -1,0 +1,71 @@
+{
+  "dataset_commit": "355df534a1c761ac416427925485b311f22ce50e",
+  "upstream_commit": "e263ec0844abf73457468a050a75853444d33d69",
+  "checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d",
+  "input_manifest_sha256": "81c260cce9c6440571c568edbffd73eb714568501b5c7fa3c4ede758d427f459",
+  "protocol": "known_skeleton/real/separate_hand/testing",
+  "device": "Mac CPU",
+  "workers": 4,
+  "threads_per_worker": 2,
+  "native_thread_environment": {
+    "OMP_NUM_THREADS": "2",
+    "OPENBLAS_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "MKL_NUM_THREADS": "2"
+  },
+  "torch_interop_threads": 1,
+  "crop_selection": "upstream ground-truth-assisted; known hand geometry",
+  "purpose": "full-split accuracy reference; wall times are not encoder benchmarks",
+  "expected_recordings": 143,
+  "completed_recordings": 143,
+  "complete": true,
+  "source_frames": 63798,
+  "hand_frame_slots": 127596,
+  "tracked_hand_frames": 102885,
+  "coverage_all_slots": 0.8063340543590708,
+  "mean_joint_error_mm": 9.42514460875624,
+  "mean_joint_acceleration": 3.92336136493353,
+  "total_wall_seconds_including_downloads": 901.2121845409274,
+  "failures": [],
+  "per_user": [
+    {
+      "user": "user_19",
+      "recordings": 29,
+      "frames": 12706,
+      "tracked_hand_frames": 20414,
+      "mean_joint_error_mm": 9.896241845150245
+    },
+    {
+      "user": "user_23",
+      "recordings": 29,
+      "frames": 13079,
+      "tracked_hand_frames": 22523,
+      "mean_joint_error_mm": 9.529450313635571
+    },
+    {
+      "user": "user_29",
+      "recordings": 30,
+      "frames": 13530,
+      "tracked_hand_frames": 21053,
+      "mean_joint_error_mm": 8.78147045039968
+    },
+    {
+      "user": "user_34",
+      "recordings": 25,
+      "frames": 11272,
+      "tracked_hand_frames": 18243,
+      "mean_joint_error_mm": 8.628778178781337
+    },
+    {
+      "user": "user_39",
+      "recordings": 30,
+      "frames": 13211,
+      "tracked_hand_frames": 20652,
+      "mean_joint_error_mm": 10.2053658204146
+    }
+  ],
+  "validation": "Saved prediction recomputation and upstream aggregate_metrics matched.",
+  "within_task_reproduction_band": true,
+  "tracking_coverage_definition": "Valid tracked hand-frame instances / all two-hand frame slots; not a visible-hand detection recall.",
+  "environment_snapshot_sha256": "03b5d3374acf1f953ecc87818e1927aaecc4a2506741b13271826651ff673cdf"
+}

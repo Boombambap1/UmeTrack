@@ -1,0 +1,98 @@
+{
+  "execution_kind": "mac-cpu-encoder-benchmark",
+  "device": "Mac CPU",
+  "batch_size": 1,
+  "input_shape": [
+    1,
+    1,
+    96,
+    96
+  ],
+  "output_shape": [
+    1,
+    72,
+    6,
+    6
+  ],
+  "dtype": "float32",
+  "grad_mode": "no_grad",
+  "model_mode": "eval",
+  "unique_crops": 335,
+  "passes": 3,
+  "measured_inferences": 1005,
+  "warmup_inferences": 30,
+  "warmup_note": "All crops were also validated before the additional warmup; this is a warm compute benchmark.",
+  "threads": 2,
+  "interop_threads": 1,
+  "median_ms_per_crop": 3.944,
+  "p95_ms_per_crop": 4.1470836,
+  "mean_ms_per_crop": 3.9625851233830844,
+  "min_ms_per_crop": 3.787417,
+  "max_ms_per_crop": 4.645709,
+  "per_pass": [
+    {
+      "pass": 1,
+      "median_ms_per_crop": 3.957083,
+      "p95_ms_per_crop": 4.1044955000000005,
+      "mean_ms_per_crop": 3.9746431611940296,
+      "min_ms_per_crop": 3.842708,
+      "max_ms_per_crop": 4.645709
+    },
+    {
+      "pass": 2,
+      "median_ms_per_crop": 3.965208,
+      "p95_ms_per_crop": 4.1763542000000005,
+      "mean_ms_per_crop": 3.9775007582089548,
+      "min_ms_per_crop": 3.808875,
+      "max_ms_per_crop": 4.371292
+    },
+    {
+      "pass": 3,
+      "median_ms_per_crop": 3.90275,
+      "p95_ms_per_crop": 4.126245600000001,
+      "mean_ms_per_crop": 3.935611450746269,
+      "min_ms_per_crop": 3.787417,
+      "max_ms_per_crop": 4.284375
+    }
+  ],
+  "batch_one_vs_saved_frame_batch": {
+    "atol": 1e-05,
+    "rtol": 0.0001,
+    "all_crops_within_tolerance": true,
+    "feature_mae": 0.0,
+    "feature_rmse": 0.0,
+    "feature_max_absolute_error": 0.0
+  },
+  "provenance": {
+    "upstream_commit": "e263ec0844abf73457468a050a75853444d33d69",
+    "checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d",
+    "package_sha256": "7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8",
+    "input_list_sha256": "2802575e76f6c8aee26d619866b345df3f44f3086ab3830e5c8a01caece9fb74",
+    "reference_manifest_sha256": "959250b379c36f9e51ad23bf186827224d001fd506e8e1b9dfe1fe056ec9a4d5",
+    "benchmark_script_sha256": "dba39616f34f477d565df51ac8f554cd34335214f27e5201a0aba30ff2e699a6",
+    "measurements_sha256": "548eb382b6a6e39a3f6e430fb8cf6e932d9a0b7acde735153c2cff6e9d62f23c"
+  },
+  "environment": {
+    "python": "3.12.15",
+    "torch": "2.4.1",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.2.1-arm64-arm-64bit",
+    "native_threads": {
+      "OMP_NUM_THREADS": "2",
+      "OPENBLAS_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "MKL_NUM_THREADS": "2"
+    },
+    "power_start": "Now drawing from 'Battery Power'\n -InternalBattery-0 (id=36175971)\t45%; discharging; 7:08 remaining present: true",
+    "power_end": "Now drawing from 'Battery Power'\n -InternalBattery-0 (id=36175971)\t44%; discharging; 6:58 remaining present: true",
+    "thermal_state": "not measured",
+    "competing_workloads": "not measured"
+  },
+  "scope": "Warm synchronous CPU encoder calls only; preloaded batch-one crops. Excludes decode, preprocessing, file IO, transfer, model load and downstream tracking. Not RB5 or headset latency.",
+  "command": [
+    ".venv/bin/python",
+    "scripts/benchmark_encoder.py",
+    "--output",
+    "artifacts/runs/mac-encoder-batch-one-2026-11-21"
+  ]
+}

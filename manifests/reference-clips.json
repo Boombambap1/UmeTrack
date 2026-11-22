@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "dataset_commit": "355df534a1c761ac416427925485b311f22ce50e",
+  "selection": "first 50 frames of recording_00 from user_19 and user_23; fixed before replay comparison",
+  "clips": [
+    {
+      "id": "user_19-recording_00",
+      "user": "user_19",
+      "recording": "recording_00",
+      "source_path": "raw_data/real/separate_hand/testing/user_19/recording_00.mp4",
+      "local_path": "artifacts/data/separate-hand-test/user_19/recording_00.mp4",
+      "video_sha256": "8df9d21e1843902a6bceb1750e177bd272aaec9a9cf8968363e6cfac7dd1bc3c",
+      "labels_sha256": "45329893f3c1fa22d99e1ceaf3ffa5c60cdbbe1179d9a2d1b7058017d23c5376",
+      "start_frame": 0,
+      "frames": 50
+    },
+    {
+      "id": "user_23-recording_00",
+      "user": "user_23",
+      "recording": "recording_00",
+      "source_path": "raw_data/real/separate_hand/testing/user_23/recording_00.mp4",
+      "local_path": "artifacts/data/separate-hand-test/user_23/recording_00.mp4",
+      "video_sha256": "bd7a7fc03bd37283d0a04bf62af7aecf6867cdacd16b244348e80e127e4230bf",
+      "labels_sha256": "7b09ffaa69d8144fe983e1abe13fe0ddb4b8122af8507a8f19f68c6ba91a224c",
+      "start_frame": 0,
+      "frames": 50
+    }
+  ]
+}

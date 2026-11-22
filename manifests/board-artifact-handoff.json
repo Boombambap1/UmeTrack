@@ -1,0 +1,35 @@
+{
+  "date": "2026-11-21",
+  "status": "staged and hash-verified",
+  "transport": "SCP/SSH over documented Tailscale board access",
+  "remote_relative_directory": "umetrack-handoff/steven/ref-7eab946c7430",
+  "account": "documented shared unprivileged account",
+  "files": [
+    {
+      "name": "qualcomm-inputs.zip",
+      "bytes": 3807442,
+      "sha256": "927b545cf993512a4c8ac88cf34c6082ac4c559ae7df31d9c0fc96bb06f89225",
+      "action": "uploaded and verified"
+    },
+    {
+      "name": "qualcomm-smoke-2026-11-21.zip",
+      "bytes": 151000,
+      "sha256": "fcbcad10e9b53795451506380734bc9f8ba6f883df725230e9c0b4e52eafbdac",
+      "action": "uploaded and verified"
+    },
+    {
+      "name": "qualcomm-input-package.json",
+      "bytes": 717,
+      "sha256": "729c448897366f19b8b57187e1cf201b6d777a1fd71c61ea0feaa8cb9e9878c5",
+      "action": "uploaded and verified"
+    },
+    {
+      "name": "smoke-exchange.json",
+      "bytes": 1012,
+      "sha256": "7e73ac0e568f01f739cfd0146b668d4b1f19a766ec2ac2b5aa0ba81023d53ed1",
+      "action": "uploaded and verified"
+    }
+  ],
+  "model_inference_performed": false,
+  "scope": "Only task directory and input/manifest files created; no SDK, permissions, driver, account or service changes."
+}
