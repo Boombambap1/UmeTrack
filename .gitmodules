@@ -1,3 +1,0 @@
-[submodule "third_party/UmeTrack"]
-	path = third_party/UmeTrack
-	url = https://github.com/facebookresearch/UmeTrack.git
