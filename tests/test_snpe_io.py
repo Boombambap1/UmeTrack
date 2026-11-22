@@ -112,3 +112,117 @@ def test_crop_id_agrees_with_steven_smoke_set():
         ]
     assert ours == [s for s in smoke if s.startswith("user_19-recording_00:000000:")]
     assert len(ours) == 3
+
+
+# --- Phase 1 audit fixes: exact sizes, exact Result dirs, backend evidence, two verdicts -----------
+
+def _write_results(d, feats, layout="NHWC"):
+    for i in range(feats.shape[0]):
+        r = d / f"Result_{i}"
+        r.mkdir(parents=True)
+        to_layout(feats[i : i + 1], layout).astype("<f4").tofile(r / "features.raw")
+
+
+def test_read_outputs_rejects_trailing_byte(tmp_path):
+    feats = np.zeros((2, 72, 6, 6), np.float32)
+    _write_results(tmp_path, feats)
+    with (tmp_path / "Result_1" / "features.raw").open("ab") as f:
+        f.write(b"\x00")
+    with pytest.raises(SystemExit, match="bytes, expected exactly"):
+        read_outputs(tmp_path, 2, "features.raw", [1, 6, 6, 72], "NHWC")
+
+
+def test_read_outputs_rejects_extra_and_missing_result_dirs(tmp_path):
+    feats = np.zeros((2, 72, 6, 6), np.float32)
+    _write_results(tmp_path, feats)
+    (tmp_path / "Result_2").mkdir()
+    with pytest.raises(SystemExit, match="unexpected"):
+        read_outputs(tmp_path, 2, "features.raw", [1, 6, 6, 72], "NHWC")
+    with pytest.raises(SystemExit, match="missing"):
+        read_outputs(tmp_path, 4, "features.raw", [1, 6, 6, 72], "NHWC")
+
+
+def test_read_outputs_rejects_extra_file_in_result_dir(tmp_path):
+    _write_results(tmp_path, np.zeros((1, 72, 6, 6), np.float32))
+    (tmp_path / "Result_0" / "other.raw").write_bytes(b"")
+    with pytest.raises(SystemExit, match="expected only"):
+        read_outputs(tmp_path, 1, "features.raw", [1, 6, 6, 72], "NHWC")
+
+
+def test_parse_runtime():
+    from read_snpe_outputs import backend_check, parse_runtime
+
+    assert parse_runtime("") == (None, [])
+    assert parse_runtime("loading model\nRuntime: CPU\ndone")[0] == "CPU"
+    assert parse_runtime("Using DSP runtime")[0] == "DSP"
+    assert parse_runtime("Runtime: CPU\nRuntime: DSP")[0] is None  # conflicting -> unverified
+    assert parse_runtime("--runtime_order cpu")[0] is None  # command-line flags are not evidence
+    assert backend_check(None, "cpu")["backend_verified"] is False
+
+
+def _synthetic_run(tmp_path, log_text=None, requested="cpu"):
+    """Full read_snpe_outputs.main() on synthetic data that matches the reference exactly."""
+    import csv as _csv
+
+    import read_snpe_outputs
+    from common import crop_id
+
+    rec = "raw_data/real/separate_hand/testing/user_19/recording_00"
+    feats = np.random.default_rng(7).normal(size=(3, 72, 6, 6)).astype(np.float32)
+    np.save(tmp_path / "ref.npy", feats)
+    with (tmp_path / "ref.csv").open("w", newline="") as f:
+        w = _csv.writer(f)
+        w.writerow(["row", "recording", "frame", "hand_idx", "cam_idx"])
+        for i in range(3):
+            w.writerow([i, rec, i, 0, 1])
+    order = [2, 0, 1]  # board order differs from reference order: must match by crop_id
+    with (tmp_path / "rt.csv").open("w", newline="") as f:
+        w = _csv.writer(f)
+        w.writerow(["idx", "raw_file", "row", "recording", "frame", "hand_idx", "cam_idx", "crop_id", "raw_sha256"])
+        for i, row in enumerate(order):
+            w.writerow([i, f"crop_{i:03d}.raw", row, rec, row, 0, 1, crop_id(rec, row, 0, 1), ""])
+    (tmp_path / "input_list.txt").write_text("".join(f"inputs/crop_{i:03d}.raw\n" for i in range(3)))
+    _write_results(tmp_path / "out", feats[order])
+    log = tmp_path / "net-run.log"
+    if log_text is not None:
+        log.write_text(log_text)
+    argv = [
+        "read_snpe_outputs.py", "--outputs-dir", str(tmp_path / "out"), "--output-dims", "1,6,6,72",
+        "--output-layout", "NHWC", "--input-list", str(tmp_path / "input_list.txt"),
+        "--roundtrip-manifest", str(tmp_path / "rt.csv"), "--reference-manifest", str(tmp_path / "ref.csv"),
+        "--reference", str(tmp_path / "ref.npy"), "--torch-reference", str(tmp_path / "ref.npy"),
+        "--requested-runtime", requested, "--run-log", str(log), "--out-dir", str(tmp_path / "summary"),
+        "--features-out", str(tmp_path / "board.npy"),
+    ]
+    old = sys.argv
+    sys.argv = argv
+    try:
+        with pytest.raises(SystemExit) as e:
+            read_snpe_outputs.main()
+    finally:
+        sys.argv = old
+    import json as _json
+
+    return e.value.code, _json.loads((tmp_path / "summary" / "summary.json").read_text())
+
+
+def test_main_no_log_is_not_verified(tmp_path):
+    code, s = _synthetic_run(tmp_path, log_text=None)
+    assert s["numeric_match"] is True and s["backend_verified"] is False and s["pass"] is False
+    assert s["backend"]["reason"] == "no snpe-net-run log" and code == 1
+
+
+def test_main_unparseable_log_is_not_verified(tmp_path):
+    _, s = _synthetic_run(tmp_path, log_text="snpe-net-run --runtime_order cpu\nfinished\n")
+    assert s["numeric_match"] is True and s["backend_verified"] is False and s["pass"] is False
+
+
+def test_main_wrong_runtime_is_not_verified(tmp_path):
+    _, s = _synthetic_run(tmp_path, log_text="Runtime: DSP\n", requested="cpu")
+    assert s["backend_verified"] is False and s["pass"] is False and s["backend"]["actual_runtime"] == "DSP"
+
+
+def test_main_both_verdicts_true_passes(tmp_path):
+    code, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n")
+    assert s["numeric_match"] and s["backend_verified"] and s["pass"] and code == 0
+    assert [r["crop_id"].split(":")[1] for r in s["per_crop"]] == ["000002", "000000", "000001"]
