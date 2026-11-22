@@ -32,6 +32,20 @@ def rel(path) -> str:
         return str(p)
 
 
+def crop_id(recording: str, frame: int, hand_idx: int, cam_idx: int) -> str:
+    """Part A's crop identity string, e.g. 'user_19-recording_00:000000:hand0:camera1'.
+
+    Matches src/umetrack_rb5/reference.py: f'{clip_id}:{frame:06d}:hand{hand}:camera{cam}' with
+    clip_id = '<user>-<recording>'. `recording` is our dataset-relative path without extension
+    (e.g. raw_data/real/separate_hand/testing/user_19/recording_00). The clip ID drops the
+    real/synthetic and split parts, so keep our `recording` column alongside it.
+    """
+    parts = Path(recording).parts
+    if len(parts) < 2 or not parts[-2].startswith("user_"):
+        raise ValueError(f"cannot derive clip id from recording {recording!r}")
+    return f"{parts[-2]}-{parts[-1]}:{int(frame):06d}:hand{int(hand_idx)}:camera{int(cam_idx)}"
+
+
 def add_upstream_to_path() -> None:
     """Make upstream `lib` importable without modifying it or writing __pycache__ into it."""
     sys.dont_write_bytecode = True
