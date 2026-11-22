@@ -26,6 +26,7 @@ The evaluation uses known hand geometry and ground-truth-assisted crops. It does
 - `src/umetrack_rb5/`: encoder capture/replay, sequence runner/profiler, strict raw-file exchange.
 - `scripts/`: experiment entry points and pinned dependency setup.
 - `tests/`: identity/state/layout/provenance checks and dependency-setup checks.
+  Part B's pytest tests are in `tests/part_b/`; see [testing](docs/testing.md) for both environments and commands.
 - `manifests/`: exact source revisions, dataset/crop identities, hashes, and candidate package metadata.
 - `results/`: small saved experiment summaries; see their paired documents for interpretation.
 - `docs/`: [architecture](docs/architecture.md), [tensor contract](docs/tensor-contract.md), [full baseline](docs/full-baseline.md), [replay/profile](docs/replay-and-profile.md), [Qualcomm handoff](docs/qualcomm-handoff.md), and [setup status](docs/setup-status.md).
