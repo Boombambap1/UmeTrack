@@ -5,10 +5,12 @@ import sys
 from pathlib import Path
 
 import pytest
-import torch
-import yaml
 
-REPO = Path(__file__).resolve().parents[1]
+np = pytest.importorskip("numpy")
+torch = pytest.importorskip("torch")
+yaml = pytest.importorskip("yaml")
+
+REPO = Path(__file__).resolve().parents[2]
 UPSTREAM = REPO / "third_party" / "UmeTrack"
 CONFIG = REPO / "configs" / "experiment.yaml"
 PINNED_COMMIT = "e263ec0844abf73457468a050a75853444d33d69"

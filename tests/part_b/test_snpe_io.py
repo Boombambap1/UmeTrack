@@ -3,10 +3,14 @@
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+np = pytest.importorskip("numpy")
+torch = pytest.importorskip("torch")
+yaml = pytest.importorskip("yaml")
+pytest.importorskip("onnxruntime")
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 from read_snpe_outputs import read_outputs, to_nchw  # noqa: E402
 from write_snpe_inputs import parse_dims, select_rows, to_layout, write_inputs  # noqa: E402
 
@@ -66,7 +70,7 @@ def test_helpers():
     assert select_rows(60, 8) == [0, 8, 17, 25, 34, 42, 51, 59]
 
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 D5_CROPS = REPO / "artifacts/crops/crops_uint8.npy"
 
 

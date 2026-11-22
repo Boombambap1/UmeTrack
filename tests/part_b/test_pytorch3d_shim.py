@@ -3,12 +3,14 @@
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
-import torch
-from scipy.spatial.transform import Rotation
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+np = pytest.importorskip("numpy")
+torch = pytest.importorskip("torch")
+pytest.importorskip("scipy")
+Rotation = pytest.importorskip("scipy.spatial.transform").Rotation
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
 from pytorch3d_shim import so3_exp_map  # noqa: E402
 
 

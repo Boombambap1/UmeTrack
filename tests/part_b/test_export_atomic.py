@@ -11,7 +11,7 @@ pytest.importorskip("onnxscript")
 pytest.importorskip("torch")
 pytest.importorskip("yaml")
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "scripts"))
 import export_encoder  # noqa: E402
 from export_encoder import write_atomically  # noqa: E402

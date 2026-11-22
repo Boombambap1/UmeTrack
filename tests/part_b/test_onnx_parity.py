@@ -3,10 +3,14 @@
 import sys
 from pathlib import Path
 
-import numpy as np
 import pytest
 
-REPO = Path(__file__).resolve().parents[1]
+np = pytest.importorskip("numpy")
+torch = pytest.importorskip("torch")
+yaml = pytest.importorskip("yaml")
+pytest.importorskip("onnxruntime")
+
+REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "scripts"))
 from check_onnx_parity import compare, preprocess, run_features  # noqa: E402
 from common import load_config  # noqa: E402
