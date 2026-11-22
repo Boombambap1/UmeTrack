@@ -10,7 +10,7 @@ own runner, and each runner only picks up its own tests, so neither side needs t
 | Packages | `requirements-mac-reference.txt` (torch 2.4.1, numpy 1.26.4, av 13.1.0, opencv-python 4.10.0.84, Pillow 10.4.0) plus PyTorch3D 0.7.8 built from source | `requirements-mac.txt` (torch 2.15.0, numpy 2.5.5, onnx 1.23.2, onnxruntime 1.32.0, onnxscript 0.7.2, av 19.0.2, opencv-python-headless 5.1.0.95, Pillow 13.0.0, PyYAML, pytest) |
 | pytorch3d | Real package | Not installed; `scripts/pytorch3d_shim.py` stands in for `so3_exp_map` during crop placement only |
 | Runner | `unittest` | `pytest` |
-| Tests | `tests/test_*.py` (TestCase classes) | `tests/part_b/test_*.py` |
+| Tests | `tests/test_*.py` (TestCase classes) | `tests/part_b/test_*.py` (`pytest.ini`: `testpaths = tests`) |
 
 Both READMEs create the environment at `.venv/`. They are normally separate machines; if both live in one
 checkout, give one of them another directory (e.g. `.venv-b/`) and use that path in the commands below.
@@ -63,7 +63,10 @@ Run:
 .venv/bin/python -m pytest -q -rs
 ```
 
-This collects `tests/part_b/` and also runs Part A's TestCase classes under pytest. Behaviour:
+`pytest.ini` sets `testpaths = tests`, so plain `pytest` from the repo root collects only `tests/`: Part A's
+`tests/test_*.py` (TestCase classes, run under pytest) and Part B's `tests/part_b/`. It never collects
+`third_party/` (for example PyTorch3D's own test suite in Part A's checkout), `scripts/` or other folders.
+Passing an explicit path (e.g. `pytest tests/part_b`) still works. Behaviour:
 
 - Each Part B test file uses `pytest.importorskip` for its third-party dependencies, so a missing package
   skips that file instead of failing collection.
