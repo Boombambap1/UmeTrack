@@ -3,10 +3,14 @@
 Tries the dynamo exporter first and falls back to the legacy TorchScript exporter,
 recording which one was used and why. Checks the result with onnx.checker and a
 single ONNX Runtime run, then writes manifests/hashes.txt and results/export/export_meta.json.
+Never deletes an existing model: exports to a temp file, verifies it, then renames it into place;
+an existing output is refused unless --force, which keeps it as a timestamped backup.
 """
 
 import argparse
+import datetime
 import json
+import os
 import traceback
 import warnings
 from pathlib import Path
@@ -33,6 +37,39 @@ def _export(backbone, x, out, opset, in_name, out_name, dynamo):
             kwargs["external_data"] = False
         torch.onnx.export(backbone, (x,), str(out), **kwargs)
     return sorted({f"{w.category.__name__}: {w.message}" for w in caught})
+
+
+def write_atomically(out: Path, produce, force: bool = False):
+    """Create `out` via produce(tmp_path) without ever deleting an existing file.
+
+    produce() writes and verifies the candidate at a temp path in the same folder and returns any value.
+    If `out` exists: refuse unless force; with force, the old file is kept as `<name>.bak-<UTC time>`.
+    The temp file is only renamed over `out` (os.replace, atomic on one filesystem) after produce()
+    returns; if produce() raises, only this run's temp file is removed and `out` is untouched.
+    Returns (produce_result, backup_path_or_None).
+    """
+    out = Path(out)
+    if out.exists() and not force:
+        raise SystemExit(f"{out} exists; refusing to overwrite (use --force to keep it as a timestamped backup)")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(f".{out.name}.tmp-{os.getpid()}")
+    if tmp.exists():
+        raise SystemExit(f"leftover temp file {tmp}; inspect it first")
+    try:
+        result = produce(tmp)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        tmp.with_name(tmp.name + ".data").unlink(missing_ok=True)
+        raise
+    backup = None
+    if out.exists():
+        stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        backup = out.with_name(f"{out.name}.bak-{stamp}")
+        if backup.exists():
+            raise SystemExit(f"backup {backup} already exists; not overwriting it")
+        os.replace(out, backup)
+    os.replace(tmp, out)
+    return result, backup
 
 
 def _io_info(values):
@@ -96,12 +133,14 @@ def main():
     ap.add_argument("--hashes", default="manifests/hashes.txt")
     ap.add_argument("--meta", default="results/export/export_meta.json")
     ap.add_argument("--exporter", choices=["auto", "dynamo", "legacy"], default="auto")
+    ap.add_argument("--force", action="store_true", help="replace an existing output, keeping it as <name>.bak-<UTC time>")
     args = ap.parse_args()
 
     cfg = load_config(REPO / args.config)
     enc = cfg["encoder"]
     out = (REPO / args.out).resolve()
-    out.parent.mkdir(parents=True, exist_ok=True)
+    if out.exists() and not args.force:
+        raise SystemExit(f"{rel(out)} exists; refusing to overwrite (use --force to keep it as a timestamped backup)")
 
     torch.manual_seed(0)
     backbone, ckpt, ckpt_sha = load_backbone(cfg)
@@ -109,35 +148,35 @@ def main():
 
     order = {"auto": [True, False], "dynamo": [True], "legacy": [False]}[args.exporter]
     attempts = []
-    chosen = None
-    for dynamo in order:
-        name = "dynamo" if dynamo else "legacy"
-        attempt = {"exporter": name}
-        try:
-            for stale in (out, out.with_name(out.name + ".data")):
-                stale.unlink(missing_ok=True)
-            attempt["warnings"] = _export(
-                backbone, x, out, enc["onnx_opset"], enc["input"]["name"], enc["output"]["name"], dynamo
-            )
-            info, problems = _validate(out, cfg, backbone, x)
-            attempt["problems"] = problems
-            if not problems:
-                chosen = (name, info, attempt)
-                attempts.append(attempt)
-                break
-        except Exception as e:  # record and fall back
-            attempt["error"] = f"{type(e).__name__}: {e}"
-            attempt["traceback_tail"] = traceback.format_exc().splitlines()[-6:]
-        attempts.append(attempt)
-        print(f"[export] {name} exporter rejected: {attempt.get('error') or attempt.get('problems')}")
 
-    if chosen is None:
+    def produce(tmp):
+        """Export to tmp (only this run's temp file is ever removed), check, and return the chosen attempt."""
+        for dynamo in order:
+            name = "dynamo" if dynamo else "legacy"
+            attempt = {"exporter": name}
+            try:
+                for own in (tmp, tmp.with_name(tmp.name + ".data")):
+                    own.unlink(missing_ok=True)
+                attempt["warnings"] = _export(
+                    backbone, x, tmp, enc["onnx_opset"], enc["input"]["name"], enc["output"]["name"], dynamo
+                )
+                if tmp.with_name(tmp.name + ".data").exists():
+                    raise RuntimeError("unexpected external data file next to the ONNX model")
+                info, problems = _validate(tmp, cfg, backbone, x)  # includes onnx.checker full_check
+                attempt["problems"] = problems
+                if not problems:
+                    attempts.append(attempt)
+                    return name, info, attempt, sha256_file(tmp)
+            except Exception as e:  # record and fall back
+                attempt["error"] = f"{type(e).__name__}: {e}"
+                attempt["traceback_tail"] = traceback.format_exc().splitlines()[-6:]
+            attempts.append(attempt)
+            print(f"[export] {name} exporter rejected: {attempt.get('error') or attempt.get('problems')}")
         raise SystemExit(f"all exporters failed: {json.dumps(attempts, indent=2)}")
 
-    name, info, attempt = chosen
-    if out.with_name(out.name + ".data").exists():
-        raise SystemExit("unexpected external data file next to the ONNX model")
-    onnx_sha = sha256_file(out)
+    (name, info, attempt, onnx_sha), backup = write_atomically(out, produce, force=args.force)
+    if sha256_file(out) != onnx_sha:
+        raise SystemExit("sha256 changed between verification and rename")
 
     update_hashes(REPO / args.hashes, {rel(ckpt): ckpt_sha, rel(out): onnx_sha})
 
@@ -180,6 +219,8 @@ def main():
     print(f"[export] outputs: {info['outputs']}")
     print(f"[export] op types: {', '.join(info['op_types'])}")
     print(f"[export] zeros smoke test max_abs vs torch: {info['smoke_zeros_max_abs_vs_torch']:.3e}")
+    if backup:
+        print(f"[export] previous file kept as {rel(backup)}  sha256 {sha256_file(backup)}")
     print(f"[export] wrote {rel(out)}  sha256 {onnx_sha}")
     print(f"[export] wrote {rel(REPO / args.hashes)}  sha256 {sha256_file(REPO / args.hashes)}")
     print(f"[export] wrote {rel(meta_path)}  sha256 {sha256_file(meta_path)}")
