@@ -10,7 +10,9 @@ Pinned identities come only from Part A's committed manifests:
   formal (335 crops): manifests/qualcomm-input-package.json  archive, package.json and input_list sha256
   smoke  (7 crops):   manifests/smoke-exchange.json          archive, internal manifest and input_list sha256
 Every raw input listed is then checked against the per-crop sha256 inside the hash-pinned package
-manifest. Raw files are used as-is (never re-encoded). Anything that does not verify is refused.
+manifest. Expected hashes, crop IDs and order come ONLY from that pinned chain, re-verified each time the
+crops are used; canonical_inputs.json is an informational copy that is refused if it disagrees. Raw files
+are used as-is (never re-encoded). Anything that does not verify is refused.
 
 CLI: verify an archive and extract it into a NEW directory, writing canonical_inputs.json (the ordered
 input_file -> crop_id list that read_snpe_outputs.py uses for --purpose formal/smoke).
@@ -139,28 +141,53 @@ def extract(set_name: str, archive: Path, out_dir: Path) -> dict:
     return record
 
 
+def _pinned_package_manifest(package_dir: Path, p: dict) -> Path:
+    """Find the package manifest by its pinned sha256 alone (never by a name written during unpacking)."""
+    hits = [f for f in sorted(package_dir.glob("*.json")) if f.name != RECORD and sha256_file(f) == p["package_manifest_sha256"]]
+    if len(hits) != 1:
+        raise CanonicalError("no unique JSON file in the package matches the pinned package-manifest sha256")
+    return hits[0]
+
+
 def verify_extracted(package_dir: Path, set_name: str) -> dict:
-    """Re-check an extracted package before use: pinned hashes, input list and every raw file."""
+    """Re-verify an extracted package from the pinned chain only, every time it is used.
+
+    Chain: repo manifest (Part A's committed manifests/*.json) -> sha256 of the package manifest and of
+    input_list.txt -> per-crop input_sha256, crop_id and ORDER from that hash-pinned package manifest ->
+    sha256 of each raw file. canonical_inputs.json (written during unpacking) is never a source of
+    expected values; if it disagrees with the chain in any way the package is refused.
+    Returns the verified record (expected values all taken from the chain).
+    """
     package_dir = Path(package_dir)
-    rec_path = package_dir / RECORD
-    if not rec_path.exists():
-        raise CanonicalError(f"{rec_path} missing; extract with scripts/canonical_crops.py")
-    record = json.loads(rec_path.read_text())
     p = pinned(set_name)
-    if record.get("purpose") != set_name or record.get("pinned") != p:
-        raise CanonicalError(f"{rec_path} was not made for the currently pinned '{set_name}' set")
-    if sha256_file(package_dir / "input_list.txt") != p["input_list_sha256"]:
-        raise CanonicalError("input_list.txt sha256 differs from the pinned value")
-    if sha256_file(package_dir / record["package_manifest"]) != p["package_manifest_sha256"]:
-        raise CanonicalError("package manifest sha256 differs from the pinned value")
-    lines = [l for l in (package_dir / "input_list.txt").read_text().splitlines() if l.strip()]
-    if [r["input_file"] for r in record["inputs"]] != lines or len(lines) != p["crops"]:
-        raise CanonicalError("canonical_inputs.json order differs from input_list.txt")
-    for r in record["inputs"]:
-        f = package_dir / r["input_file"]
-        if not f.exists() or sha256_file(f) != r["input_sha256"]:
-            raise CanonicalError(f"{r['input_file']}: missing or sha256 differs from the package manifest")
-    return record
+    input_list = package_dir / "input_list.txt"
+    if not input_list.exists() or sha256_file(input_list) != p["input_list_sha256"]:
+        raise CanonicalError("input_list.txt missing or sha256 differs from the pinned value")
+    pkg_path = _pinned_package_manifest(package_dir, p)
+    records = _records(json.loads(pkg_path.read_text()))
+    lines = [l for l in input_list.read_text().splitlines() if l.strip()]
+    if [r[0] for r in records] != lines:
+        raise CanonicalError("pinned package manifest order differs from the pinned input_list.txt")
+    if len(records) != p["crops"] or len({r[2] for r in records}) != len(records):
+        raise CanonicalError(f"expected {p['crops']} unique crop ids, got {len(records)}")
+    if set_name == "smoke" and sorted(r[2] for r in records) != sorted(p["crop_ids"]):
+        raise CanonicalError("smoke crop ids differ from manifests/smoke-exchange.json")
+    for input_file, digest, _ in records:
+        f = package_dir / input_file
+        if not f.exists() or sha256_file(f) != digest:
+            raise CanonicalError(f"{input_file}: missing or sha256 differs from the pinned package manifest")
+    verified = {
+        "purpose": set_name,
+        "pinned": p,
+        "package_manifest": pkg_path.name,
+        "inputs": [{"idx": i, "input_file": f, "input_sha256": d, "crop_id": c} for i, (f, d, c) in enumerate(records)],
+    }
+    rec_path = package_dir / RECORD
+    if rec_path.exists():
+        written = json.loads(rec_path.read_text())
+        if any(written.get(k) != verified[k] for k in ("purpose", "pinned", "package_manifest", "inputs")):
+            raise CanonicalError(f"{RECORD} disagrees with the pinned chain (modified after unpacking?)")
+    return verified
 
 
 def main():

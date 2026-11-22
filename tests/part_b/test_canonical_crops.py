@@ -182,3 +182,76 @@ def test_reader_dev_is_labelled(monkeypatch, tmp_path):
     _run_reader(monkeypatch, tmp_path, ["--roundtrip-manifest", str(tmp_path / "rt.csv"), "--input-list", str(tmp_path / "list.txt")])
     md = (tmp_path / "summary" / "summary.md").read_text()
     assert "development only" in md
+
+
+# --- Steven's re-check of ec34f61: expected values must come only from the pinned chain ----------
+
+def _extract_good(formal_set, tmp_path):
+    archive, crops = formal_set()
+    out = tmp_path / "out"
+    extract("formal", archive, out)
+    return out, crops
+
+
+def _rewrite_record(out, fn):
+    rec_path = out / canonical_crops.RECORD
+    rec = json.loads(rec_path.read_text())
+    fn(rec)
+    rec_path.write_text(json.dumps(rec, indent=2) + "\n")
+
+
+def test_bypass_a_edited_raw_with_updated_hash_in_record_rejected(formal_set, tmp_path):
+    out, _ = _extract_good(formal_set, tmp_path)
+    raw = out / "inputs" / "crop-00001.raw"
+    raw.write_bytes(b"\x00" * raw.stat().st_size)  # different pixels, same size
+    new_sha = sha(raw.read_bytes())
+
+    def fix_hash(rec):
+        rec["inputs"][1]["input_sha256"] = new_sha
+
+    _rewrite_record(out, fix_hash)
+    with pytest.raises(CanonicalError):
+        verify_extracted(out, "formal")
+
+
+def test_bypass_b_swapped_crop_ids_rejected(formal_set, tmp_path):
+    out, _ = _extract_good(formal_set, tmp_path)
+
+    def swap(rec):
+        a, b = rec["inputs"][0], rec["inputs"][2]
+        a["crop_id"], b["crop_id"] = b["crop_id"], a["crop_id"]
+
+    _rewrite_record(out, swap)
+    with pytest.raises(CanonicalError):
+        verify_extracted(out, "formal")
+
+
+def test_bypass_c_reordered_input_list_rejected(formal_set, tmp_path):
+    out, _ = _extract_good(formal_set, tmp_path)
+    lines = (out / "input_list.txt").read_text().splitlines()
+    (out / "input_list.txt").write_text("\n".join([lines[1], lines[0], lines[2]]) + "\n")
+
+    def reorder(rec):
+        rec["inputs"][0], rec["inputs"][1] = rec["inputs"][1], rec["inputs"][0]
+
+    _rewrite_record(out, reorder)
+    with pytest.raises(CanonicalError):
+        verify_extracted(out, "formal")
+
+
+def test_bypass_record_cannot_choose_package_manifest(formal_set, tmp_path):
+    """A rewritten record pointing at a forged package manifest must not be trusted."""
+    out, crops = _extract_good(formal_set, tmp_path)
+    forged = json.loads((out / "package.json").read_text())
+    forged["crops"][0]["crop_id"], forged["crops"][1]["crop_id"] = forged["crops"][1]["crop_id"], forged["crops"][0]["crop_id"]
+    (out / "forged.json").write_text(json.dumps(forged))
+    _rewrite_record(out, lambda rec: rec.update(package_manifest="forged.json"))
+    with pytest.raises(CanonicalError):
+        verify_extracted(out, "formal")
+
+
+def test_verified_ids_come_from_pinned_package_order(formal_set, tmp_path):
+    out, crops = _extract_good(formal_set, tmp_path)
+    got = verify_extracted(out, "formal")
+    assert [r["crop_id"] for r in got["inputs"]] == [c["crop_id"] for c in crops]
+    assert [r["input_file"] for r in got["inputs"]] == [c["input_file"] for c in crops]
