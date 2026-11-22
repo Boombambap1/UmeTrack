@@ -23,6 +23,14 @@ encoder:
 
 sdk:
   qairt_version: "2.33.2.250410"  # must match on conversion host and board
+  build_id: "250410134701_117956"  # from sdk.yaml
+  zip: v2.33.2.250410.zip
+  zip_sha256: 37487de4d9dd770f15826224bc915d138417eb44445ebe6bd8718b6ca172d617
+  host_requirements: {os: "Ubuntu 22.04", python: "3.10"}  # ReleaseNotes.txt; check-python-dependency also allows 3.8
+  host_tools: bin/x86_64-linux-clang           # snpe-onnx-to-dlc, snpe-dlc-info, snpe-dlc-quantize
+  board_runtime_bin: bin/aarch64-oe-linux-gcc11.2  # snpe-net-run
+  board_runtime_lib: lib/aarch64-oe-linux-gcc11.2  # libSNPE.so, libSnpeDspV66Stub.so
+  dsp_lib: lib/hexagon-v66/unsigned            # libSnpeDspV66Skel.so (QRB5165 = Hexagon v66)
   conversion_host: TBD
   board: rb5
 
