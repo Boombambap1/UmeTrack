@@ -1,0 +1,109 @@
+{
+  "date": "2026-11-23",
+  "scope": "Fresh local preparation checks only; no new SDK conversion, board access or encoder inference on RB5.",
+  "packages": {
+    "formal": {
+      "crops": 335,
+      "archive": "artifacts/qualcomm-inputs.zip",
+      "archive_sha256": "927b545cf993512a4c8ac88cf34c6082ac4c559ae7df31d9c0fc96bb06f89225",
+      "package_manifest_sha256": "7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8",
+      "input_list_sha256": "2802575e76f6c8aee26d619866b345df3f44f3086ab3830e5c8a01caece9fb74",
+      "verification": "archive, input list, pinned manifest, each raw file, crop identities and order"
+    },
+    "smoke": {
+      "crops": 7,
+      "archive": "artifacts/qualcomm-smoke-2026-11-21.zip",
+      "archive_sha256": "fcbcad10e9b53795451506380734bc9f8ba6f883df725230e9c0b4e52eafbdac",
+      "package_manifest_sha256": "cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5",
+      "input_list_sha256": "59c41769cf063f13610fa12fe3bc8102c0be74bcc407c383b19b693c37bc29bb",
+      "verification": "archive, input list, pinned manifest, each raw file, crop identities and order"
+    }
+  },
+  "formal_package_matches_reference_bytes": true,
+  "onnx": {
+    "path": "artifacts/encoder.onnx",
+    "sha256": "1e86586510d928febb2db643caaef6e13fc48e4e5dd236424422cd89f34fa483",
+    "bytes": 15098488
+  },
+  "reference_unchanged": {
+    "files": 105,
+    "all_before_and_after_hashes_equal": true,
+    "local_manifest": "artifacts/pre-handoff-2026-11-23/reference-before.json",
+    "manifest_sha256": "a2bfd618fe4a244f58588561f58e33714e79402470f9c81df695c425ba19527c"
+  },
+  "round_trip": [
+    {
+      "layout": "NCHW",
+      "crops": 335,
+      "hand_frames": 200,
+      "feature_max_absolute_error": 0.0,
+      "mpjpe_change_mm": 0.0,
+      "max_joint_displacement_mm": 0.0,
+      "masks_and_ground_truth_match": true
+    },
+    {
+      "layout": "NHWC",
+      "crops": 335,
+      "hand_frames": 200,
+      "feature_max_absolute_error": 0.0,
+      "mpjpe_change_mm": 0.0,
+      "max_joint_displacement_mm": 0.0,
+      "masks_and_ground_truth_match": true
+    }
+  ],
+  "commands": [
+    {
+      "command": "artifacts/repository-audit-2026-11-21/part-b-env/bin/python artifacts/pre-handoff-2026-11-23/verify_assets.py",
+      "exit_code": 0
+    },
+    {
+      "command": "OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 MKL_NUM_THREADS=2 .venv/bin/python scripts/check_raw_exchange.py --output artifacts/pre-handoff-2026-11-23/raw-round-trip",
+      "exit_code": 0
+    }
+  ],
+  "evidence": [
+    {
+      "path": "artifacts/pre-handoff-2026-11-23/verify_assets.py",
+      "sha256": "a3d0f1797362248641f3a33081128a90181f0051972a8927619133cf15d035a6"
+    },
+    {
+      "path": "artifacts/pre-handoff-2026-11-23/assets.json",
+      "sha256": "649c0d9b65001bb03f29a8308c32a76993be596729726e9f208ef84d629d011a"
+    },
+    {
+      "path": "artifacts/pre-handoff-2026-11-23/raw-round-trip/summary.json",
+      "sha256": "85203f88f681664650cc2839c340ebaa429d0467d03a759a5948a0d2190eb3fd"
+    }
+  ],
+  "existing_tests": {
+    "date": "2026-11-23",
+    "source": "artifacts/assessment-8b02c75-2026-11-23/overall-assessment.json",
+    "part_a_passed": 16,
+    "part_b_passed": 77,
+    "part_b_skipped": 1,
+    "note": "Previously executed checks; not rerun during this preparation. No runtime source changed."
+  },
+  "stop_gate": {
+    "status": "waiting for minimal float DLC handoff",
+    "required": [
+      "float DLC and independently checked SHA256",
+      "QAIRT/SNPE conversion release/build matching intended board runtime",
+      "actual input/output tensor names, shapes, dtypes and layouts",
+      "exact conversion command and complete log",
+      "runtime location/setup accessible to the intended benchmark account"
+    ],
+    "proposed_feature_tolerances": "configs/experiment.yaml remains unchanged; feature tolerances are proposed, not newly agreed here.",
+    "cpu_pose_criterion": "Absolute MPJPE change below 0.1 mm against paired 8.961397993859494 mm reference.",
+    "blocked_actions": [
+      "finalize model-specific invocation and output decoding",
+      "stage/validate matching runtime for benchmark account",
+      "run seven-crop RB5 CPU smoke test",
+      "run formal 335-crop RB5 CPU experiment",
+      "collect board inference timing and replay board features"
+    ]
+  },
+  "rb5_inference_performed": false,
+  "sdk_or_board_changed": false,
+  "notion_modified": false,
+  "git_commit_or_push_performed": false
+}

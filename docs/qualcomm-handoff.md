@@ -60,3 +60,9 @@ Board access now succeeds through the documented unprivileged account after reco
 ## Shared handoff
 
 See docs/part-a-part-b-handoff.md for the reconciled division of work, conversion delivery checklist, and CPU-first execution gate. Both crop archives and their manifests are staged and SHA256-verified in the documented shared board account under umetrack-handoff/steven/ref-7eab946c7430; manifests/board-artifact-handoff.json records identities. SDK binaries, credentials, and models remain outside Git. This transfer ran no inference. GPU/DSP repairs do not block the first float CPU comparison once Part B delivers the matched DLC.
+
+## Independent preparation update — November 23
+
+The recovered float ONNX is validated on all 335 frozen crops, including downstream pose replay on the Mac; [the small summary](../results/canonical-onnx-validation.json) preserves the November 21 evidence. The float DLC remains pending, with Ali seeking a compatible conversion host. Fresh local checks verified both crop archives and repeated the 335-crop raw export/import/replay for NCHW and NHWC with exact feature/pose equality. These checks use Mac features and do not establish Qualcomm inference. See [CPU next steps](cpu-next-steps.md) and [readiness results](../results/pre-handoff-readiness.json).
+
+Stop before model-specific board preparation until the DLC/hash, matched SDK build, actual tensor metadata, conversion command/log and accessible runtime setup are supplied. No board runtime, permissions, drivers or services were changed during these checks.

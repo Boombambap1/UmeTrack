@@ -1,13 +1,13 @@
 # Part A / Part B handoff to RB5 testing
 
-Reconciled November 21, 2026 against the [Notion task](https://app.notion.com/p/3e6bc072402f80f984a1f73bc57c50dc), the recorded work split, and observed repository/board evidence. Steven owns Part A. Steven confirmed that Part B's delivery is not available yet; further collaboration is pending. This document records the current interface and next dependencies, not a newly confirmed teammate commitment.
+Updated November 23, 2026 against the [Notion task](https://app.notion.com/p/3e6bc072402f80f984a1f73bc57c50dc), recorded A/B split, repository evidence and Ali's response relayed by Steven. Steven owns Part A. ONNX export and Mac parity/replay are verified; float DLC conversion remains pending while Ali seeks a compatible Linux host. Ali prioritizes the minimal float delivery independently of DSP repair. Board diagnostics below remain November 21 observations. See [CPU next steps](cpu-next-steps.md) for completed independent checks and the stopping gate. No new deadline or host availability is inferred.
 
 ## Scope and division
 
 | Work | Owner under the recorded split | Current evidence / next action |
 | --- | --- | --- |
 | Mac accuracy, canonical inputs/features, replay and timing | Part A — Steven | Complete; result summaries in results/ |
-| ONNX export, supported Linux conversion environment, float DLC and SDK provenance | Part B | Deliver or locate the conversion bundle described below |
+| ONNX export, supported Linux conversion environment, float DLC and SDK provenance | Part B — Ali | ONNX recovered and validated; conversion host and float DLC pending |
 | RB5 CPU execution and paired pose evaluation | Part A — Steven | Ready to consume a verified float DLC; does not depend on fixing DSP/GPU |
 | RB5 GPU float experiment | Part A — Steven | Investigate validator SIGSEGV alongside CPU work |
 | DSP runtime/quantization/calibration and INT8 experiment | Part B | Investigate missing RPC library; keep calibration separate from scored crops |

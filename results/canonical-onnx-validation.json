@@ -1,0 +1,143 @@
+{
+  "scope": "Mac ONNX Runtime CPU encoder validation on frozen Part A crops; not Qualcomm conversion or RB5 execution.",
+  "experiment_date": "2026-11-21",
+  "summary_prepared_date": "2026-11-23",
+  "historical_result": true,
+  "source": {
+    "upstream_commit": "e263ec0844abf73457468a050a75853444d33d69",
+    "checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d",
+    "data_submodule_commit": "355df534a1c761ac416427925485b311f22ce50e"
+  },
+  "onnx": {
+    "path": "artifacts/encoder.onnx",
+    "sha256": "1e86586510d928febb2db643caaef6e13fc48e4e5dd236424422cd89f34fa483",
+    "bytes": 15098488
+  },
+  "inputs": {
+    "frames": 100,
+    "crops": 335,
+    "package_sha256": "7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8",
+    "reference_manifest_sha256": "959250b379c36f9e51ad23bf186827224d001fd506e8e1b9dfe1fe056ec9a4d5",
+    "policy": "Use the frozen canonical crop bytes; do not regenerate with another decode/geometry stack."
+  },
+  "feature_tolerances": {
+    "max_abs": 0.0001,
+    "rel_l2": 1e-05
+  },
+  "onnx_vs_saved_part_a_features": {
+    "pass": true,
+    "checks": {
+      "max_abs": {
+        "limit": 0.0001,
+        "worst": 4.0531158447265625e-06,
+        "pass": true
+      },
+      "rel_l2_per_crop": {
+        "limit": 1e-05,
+        "worst": 1.0832989809649768e-06,
+        "pass": true,
+        "n_crops_over": 0
+      }
+    },
+    "overall": {
+      "max_abs": 4.0531158447265625e-06,
+      "mean_abs": 5.590602099586133e-08,
+      "rel_l2": 4.480253814759661e-07,
+      "worst_crop_max_abs": {
+        "row": 54,
+        "value": 4.0531158447265625e-06
+      },
+      "worst_crop_rel_l2": {
+        "row": 54,
+        "value": 1.0832989809649768e-06
+      }
+    },
+    "torch_feature_range": {
+      "min": -0.6123501062393188,
+      "max": 1.8415101766586304,
+      "mean": 0.08244762569665909,
+      "std": 0.1973084658384323,
+      "frac_zero": 0.0
+    }
+  },
+  "part_b_torch_vs_saved_part_a_features": {
+    "pass": true,
+    "checks": {
+      "max_abs": {
+        "limit": 0.0001,
+        "worst": 0.0,
+        "pass": true
+      },
+      "rel_l2_per_crop": {
+        "limit": 1e-05,
+        "worst": 0.0,
+        "pass": true,
+        "n_crops_over": 0
+      }
+    },
+    "overall": {
+      "max_abs": 0.0,
+      "mean_abs": 0.0,
+      "rel_l2": 0.0,
+      "worst_crop_max_abs": {
+        "row": 0,
+        "value": 0.0
+      },
+      "worst_crop_rel_l2": {
+        "row": 0,
+        "value": 0.0
+      }
+    },
+    "torch_feature_range": {
+      "min": -0.6123501062393188,
+      "max": 1.8415101766586304,
+      "mean": 0.08244762569665909,
+      "std": 0.1973084658384323,
+      "frac_zero": 0.0
+    }
+  },
+  "versions": {
+    "torch": "2.15.0",
+    "numpy": "2.5.5",
+    "av": "19.0.2",
+    "onnx": "1.23.2",
+    "onnxruntime": "1.32.0"
+  },
+  "pose_metrics": {
+    "execution_kind": "onnx-cpu-validation",
+    "tracked_hand_frames": 200,
+    "reference_mpjpe_mm": 8.961397993859494,
+    "imported_mpjpe_mm": 8.9613971812326,
+    "absolute_mpjpe_change_mm": 8.126268937758141e-07,
+    "mean_joint_displacement_mm": 5.978861238857655e-05,
+    "p95_joint_displacement_mm": 0.00011646467767432367,
+    "max_joint_displacement_mm": 0.0002075419694326087,
+    "masks_and_ground_truth_match": true
+  },
+  "rb5_inference_performed": false,
+  "snpe_conversion_performed": false,
+  "evidence": [
+    {
+      "path": "artifacts/repository-audit-2026-11-21/canonical-validation/feature-validation.json",
+      "sha256": "1dc178a6c4244597f70950f8ca82a573ab2b654fe98c8550ef546858ded713a4"
+    },
+    {
+      "path": "artifacts/repository-audit-2026-11-21/canonical-validation/pose-validation.json",
+      "sha256": "1230948e10224399ffc04865d0ff57d7d109b6815489677d6c4671ce7f5f48d7"
+    },
+    {
+      "path": "artifacts/repository-audit-2026-11-21/canonical-validation/onnx-features.npy",
+      "sha256": "53f1c92a1b9c872f590aca179386177992eb922b1a604b02670c99c89525c769"
+    },
+    {
+      "path": "artifacts/repository-audit-2026-11-21/canonical-validation/part-a-features.npy",
+      "sha256": "ca6bbc05aa0b7597994de9b7b14d1fafc522435379bc0647f9f38731f5e81286"
+    }
+  ],
+  "limitations": [
+    "This summarizes the preserved November 21 audit rather than rerunning ONNX inference on November 23.",
+    "The original detailed reports and arrays are ignored local artifacts, not files distributed in Git.",
+    "No RB5 backend execution or timing is established by this result.",
+    "The earlier audit used a local harness; this summary preserves evidence hashes and metrics without claiming that harness is a maintained reproduction entry point."
+  ]
+}

@@ -6,7 +6,7 @@ Task: [Hand tracking research — Steven and Ali](https://app.notion.com/p/3e6bc
 
 ## Evidence and status
 
-Mac baseline/replay/frame-batch experiments completed November 19; batch-one timing, collaboration setup, and board diagnostics completed November 21, 2026. This repository versions the shared implementation, documentation, manifests, and small result summaries. Large experimental artifacts are managed separately.
+Mac baseline/replay/frame-batch experiments completed November 19; batch-one timing and board diagnostics completed November 21, 2026. Canonical ONNX validation from November 21 is now summarized in shared results; local package integrity and raw round-trip checks passed again November 23. This repository versions the shared implementation, documentation, manifests, and small result summaries. Large experimental artifacts are managed separately.
 
 | Experiment | Recorded result | Meaning |
 | --- | --- | --- |
@@ -16,6 +16,7 @@ Mac baseline/replay/frame-batch experiments completed November 19; batch-one tim
 | Mac batch-one encoder | 3.944 ms/crop median; 4.147 ms/crop p95; 1,005 calls | Warm CPU compute on 335 fixed crops; features exactly match reference |
 | Mac serial profile | Encoder median 12.232 ms/frame batch; total 29.960 ms/frame | Sampled offline CPU workload, not batch-one or headset latency |
 | Raw export/import/replay | Exact equality for NCHW and NHWC using Mac fixtures | File exchange checks; no Qualcomm inference |
+| Canonical ONNX CPU validation on Mac | 335 frozen crops; maximum feature difference 4.053e-6; paired MPJPE change 8.126e-7 mm | Export/replay evidence from November 21, not Qualcomm inference; [summary](results/canonical-onnx-validation.json) |
 | RB5 backend diagnostics | GPU validator crashed; DSP validator failed with missing RPC library | Current staged runtime; see board-readiness report |
 | RB5 encoder CPU/GPU/DSP | Pending | No UmeTrack board accuracy or latency established |
 
@@ -31,6 +32,7 @@ The evaluation uses known hand geometry and ground-truth-assisted crops. It does
 - `results/`: small saved experiment summaries; see their paired documents for interpretation.
 - `docs/`: [architecture](docs/architecture.md), [tensor contract](docs/tensor-contract.md), [full baseline](docs/full-baseline.md), [replay/profile](docs/replay-and-profile.md), [Qualcomm handoff](docs/qualcomm-handoff.md), and [setup status](docs/setup-status.md).
 - [Board readiness](docs/board-readiness.md): verified access/runtime identity and GPU/DSP diagnostic failures.
+- [CPU next steps](docs/cpu-next-steps.md): completed independent preparation and the explicit float-DLC stopping gate.
 - [Part A / Part B handoff](docs/part-a-part-b-handoff.md): parallel work, conversion delivery checklist, staged inputs, and CPU acceptance.
 - `examples/conversion-handoff.template.json`: Part B float conversion delivery checklist.
 - `examples/board-execution.template.json`: fields required for a returned board run.
@@ -102,4 +104,4 @@ The separate warm CPU microbenchmark preloads all 335 frozen crops, validates ea
 OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 MKL_NUM_THREADS=2 .venv/bin/python scripts/benchmark_encoder.py --output artifacts/runs/mac-encoder-batch-one-new
 ```
 
-The shared handoff directory and exact Part B delivery requirements are in [the reconciliation runbook](docs/part-a-part-b-handoff.md). Part B's conversion delivery is not available yet, as Steven confirmed November 21. Further board work awaits that collaboration.
+The shared handoff directory and exact Part B delivery requirements are in [the reconciliation runbook](docs/part-a-part-b-handoff.md). As of November 23, Ali is prioritizing the float DLC and seeking a compatible Linux conversion host; the DLC delivery remains pending. Independent preparation and fresh local checks are recorded in [CPU next steps](docs/cpu-next-steps.md). Model-specific board preparation stops at that handoff; DSP work is not a prerequisite.
