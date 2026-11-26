@@ -197,16 +197,29 @@ def verdict_line(s: dict) -> str:
     return f"NOT PASS (numeric_match={s['numeric_match']}, backend_verified={s['backend_verified']})"
 
 
+TARGETS = {
+    "rb5": {"title": "D6 — RB5 vs ONNX Runtime encoder features", "who": "Board", "note": None},
+    "conversion-host": {
+        "title": "Development check on the conversion host — x86_64 snpe-net-run vs ONNX Runtime encoder features",
+        "who": "Host",
+        "note": "Development check on the conversion host, not the RB5 experiment: x86_64 host runtime, "
+                "Part B development crops. Says nothing about RB5 CPU accuracy or timing.",
+    },
+}
+
+
 def _markdown(s: dict) -> str:
     c, o, b = s["checks"], s["overall"], s["backend"]
+    t = TARGETS[s["target"]]
     lines = [
-        "# D6 — RB5 vs ONNX Runtime encoder features",
+        f"# {t['title']}",
         "",
+        *([f"**{t['note']}**", ""] if t["note"] else []),
         f"**Purpose: {s['purpose_label']}**",
         "",
         f"**Result: {verdict_line(s)}** on {s['n_crops']} crops.",
         "",
-        f"- numeric_match: **{s['numeric_match']}** (tolerances `tolerances.board_cpu_vs_onnx`, declared before this run, unchanged)",
+        f"- numeric_match: **{s['numeric_match']}** (tolerances `tolerances.{s['tolerance_key']}`, declared before this run, unchanged)",
         f"- backend_verified: **{s['backend_verified']}** — requested `{s['requested_runtime']}`, "
         f"actual from log `{b['actual_runtime']}` ({b['reason']})",
         "",
@@ -216,10 +229,10 @@ def _markdown(s: dict) -> str:
         f"| rel_l2 per crop | {c['rel_l2_per_crop']['limit']:.1e} | {c['rel_l2_per_crop']['worst']:.3e} "
         f"(idx {o['worst_crop_rel_l2']['row']}) | {c['rel_l2_per_crop']['pass']} |",
         "",
-        f"Overall: max_abs {o['max_abs']:.3e}, mean_abs {o['mean_abs']:.3e}, rel_l2 {o['rel_l2']:.3e}.",
-        f"Diagnostic, board vs PyTorch: max_abs {s['vs_torch']['max_abs']:.3e}, rel_l2 {s['vs_torch']['rel_l2']:.3e}.",
+        f"Overall: max_abs {o['max_abs']:.3e}, mean_abs (MAE) {o['mean_abs']:.3e}, RMSE {o['rmse']:.3e}, rel_l2 {o['rel_l2']:.3e}.",
+        f"Diagnostic, {t['who'].lower()} vs PyTorch: max_abs {s['vs_torch']['max_abs']:.3e}, rel_l2 {s['vs_torch']['rel_l2']:.3e}.",
         "",
-        f"Board output: `{s['output_file']}` dims {s['output_dims']} layout {s['output_layout']} "
+        f"{t['who']} output: `{s['output_file']}` dims {s['output_dims']} layout {s['output_layout']} "
         "-> explicit transpose to NCHW [1,72,6,6]. Result_<i> matched to input_list line i, reference by crop_id.",
         f"Reference: `{s['reference']}` sha256 `{s['reference_sha256']}`.",
         f"Run log: `{s['run_log']}` sha256 `{s['run_log_sha256']}`.",
@@ -257,6 +270,9 @@ def main():
     ap.add_argument("--out-dir", default="results/board_cpu_d6")
     ap.add_argument("--features-out", default="artifacts/reference/board_cpu_d6_features.npy")
     ap.add_argument("--purpose", choices=["dev", "formal", "smoke"], default="dev")
+    ap.add_argument("--target", choices=sorted(TARGETS), default="rb5",
+                    help="where snpe-net-run ran; conversion-host labels the run a development check, not the RB5 experiment")
+    ap.add_argument("--tolerance-key", default="board_cpu_vs_onnx", help="key under tolerances: in the config")
     ap.add_argument("--canonical-inputs", default=None, help="for formal/smoke: dir made by scripts/canonical_crops.py")
     args = ap.parse_args()
 
@@ -289,7 +305,10 @@ def main():
     if list(board.shape) != want or list(ref.shape) != want:
         raise SystemExit(f"shape mismatch: board {list(board.shape)}, reference {list(ref.shape)}, want {want}")
 
-    result = compare(ref, board, cfg["tolerances"]["board_cpu_vs_onnx"])
+    if args.tolerance_key not in cfg["tolerances"]:
+        raise SystemExit(f"tolerances.{args.tolerance_key} is not declared in {args.config}; declare it before comparing")
+    tol = cfg["tolerances"][args.tolerance_key]
+    result = compare(ref, board, tol)
     torch_ref = np.load(REPO / args.torch_reference)[ref_rows].astype(np.float64)
     vs_torch = {
         "max_abs": float(np.abs(board - torch_ref).max()),
@@ -320,7 +339,10 @@ def main():
         "run_log_sha256": sha256_file(run_log) if run_log.exists() else None,
         "diag_log": rel(diag_log) if diag_log else None,
         "diag_log_sha256": sha256_file(diag_log) if diag_log and diag_log.exists() else None,
-        "tolerances": cfg["tolerances"]["board_cpu_vs_onnx"],
+        "target": args.target,
+        "target_note": TARGETS[args.target]["note"],
+        "tolerance_key": args.tolerance_key,
+        "tolerances": tol,
         "vs_torch": vs_torch,
         **{k: v for k, v in result.items() if k != "pass"},
     }
@@ -338,13 +360,15 @@ def main():
     np.save(feats, board)
 
     c, o = result["checks"], result["overall"]
+    if TARGETS[args.target]["note"]:
+        print(f"[board] {TARGETS[args.target]['note']}")
     print(f"[board] purpose: {purpose_label}")
     print(f"[board] {verdict_line(summary)}: {len(ids)} crops")
     print(f"[board] numeric_match {numeric_match}: max_abs worst {c['max_abs']['worst']:.3e} (limit {c['max_abs']['limit']:.1e}); "
           f"rel_l2 worst crop {c['rel_l2_per_crop']['worst']:.3e} (limit {c['rel_l2_per_crop']['limit']:.1e})")
     print(f"[board] backend_verified {backend['backend_verified']}: requested {summary['requested_runtime']}, "
           f"log {backend['actual_runtime']} ({backend['reason']})")
-    print(f"[board] overall max_abs {o['max_abs']:.3e}, mean_abs {o['mean_abs']:.3e}, rel_l2 {o['rel_l2']:.3e}")
+    print(f"[board] overall max_abs {o['max_abs']:.3e}, mean_abs {o['mean_abs']:.3e}, rmse {o['rmse']:.3e}, rel_l2 {o['rel_l2']:.3e}")
     for p in (sj, sm, feats):
         print(f"[board] wrote {rel(p)}  sha256 {sha256_file(p)}")
     sys.exit(0 if summary["pass"] else 1)

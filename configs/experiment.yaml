@@ -55,6 +55,11 @@ tolerances:
   board_cpu_vs_onnx:
     max_abs: 1.0e-3
     rel_l2: 1.0e-4
+  # development check on the conversion host (x86_64 snpe-net-run, Part B dev crops); not the RB5 experiment.
+  # Declared 2026-11-26 before running it; same limits as board_cpu_vs_onnx.
+  host_cpu_vs_onnx_dev:
+    max_abs: 1.0e-3
+    rel_l2: 1.0e-4
   pose_error_change_mm: 0.1
 
 benchmark:

@@ -164,7 +164,7 @@ def test_parse_runtime():
     assert backend_check(None, "cpu")["backend_verified"] is False
 
 
-def _synthetic_run(tmp_path, log_text=None, requested="cpu"):
+def _synthetic_run(tmp_path, log_text=None, requested="cpu", extra=()):
     """Full read_snpe_outputs.main() on synthetic data that matches the reference exactly."""
     import csv as _csv
 
@@ -196,7 +196,7 @@ def _synthetic_run(tmp_path, log_text=None, requested="cpu"):
         "--roundtrip-manifest", str(tmp_path / "rt.csv"), "--reference-manifest", str(tmp_path / "ref.csv"),
         "--reference", str(tmp_path / "ref.npy"), "--torch-reference", str(tmp_path / "ref.npy"),
         "--requested-runtime", requested, "--run-log", str(log), "--out-dir", str(tmp_path / "summary"),
-        "--features-out", str(tmp_path / "board.npy"),
+        "--features-out", str(tmp_path / "board.npy"), *extra,
     ]
     old = sys.argv
     sys.argv = argv
@@ -207,7 +207,8 @@ def _synthetic_run(tmp_path, log_text=None, requested="cpu"):
         sys.argv = old
     import json as _json
 
-    return e.value.code, _json.loads((tmp_path / "summary" / "summary.json").read_text())
+    summary = tmp_path / "summary" / "summary.json"
+    return e.value.code, (_json.loads(summary.read_text()) if summary.exists() else None)
 
 
 def test_main_no_log_is_not_verified(tmp_path):
@@ -230,6 +231,27 @@ def test_main_both_verdicts_true_passes(tmp_path):
     code, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n")
     assert s["numeric_match"] and s["backend_verified"] and s["pass"] and code == 0
     assert [r["crop_id"].split(":")[1] for r in s["per_crop"]] == ["000002", "000000", "000001"]
+
+
+def test_main_default_target_is_rb5_and_reports_rmse(tmp_path):
+    _, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n")
+    md = (tmp_path / "summary" / "summary.md").read_text()
+    assert s["target"] == "rb5" and s["tolerance_key"] == "board_cpu_vs_onnx" and s["overall"]["rmse"] == 0.0
+    assert md.startswith("# D6 — RB5 vs ONNX") and "RMSE" in md
+
+
+def test_main_conversion_host_target_is_labelled_development_check(tmp_path):
+    _, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n",
+                          extra=["--target", "conversion-host", "--tolerance-key", "host_cpu_vs_onnx_dev"])
+    md = (tmp_path / "summary" / "summary.md").read_text()
+    assert s["target"] == "conversion-host" and s["tolerance_key"] == "host_cpu_vs_onnx_dev"
+    assert "Development check on the conversion host" in md.splitlines()[0]
+    assert "not the RB5 experiment" in md and "RB5 vs ONNX" not in md and "development only" in md
+
+
+def test_main_undeclared_tolerance_key_refused(tmp_path):
+    code, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n", extra=["--tolerance-key", "made_up_key"])
+    assert s is None and "tolerances.made_up_key is not declared" in str(code)
 
 
 # --- Steven's re-check of ec34f61: runtime evidence must show what EXECUTED -----------------------
