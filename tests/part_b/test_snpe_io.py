@@ -310,3 +310,53 @@ def test_diag_mixed_layers_not_verified(tmp_path):
     diag = "Layer 0 (conv1) Runtime: DSP\nLayer 1 (relu1) Runtime: CPU\n"
     r = _verified("Runtime: DSP\n", "dsp", diag=diag, tmp_path=tmp_path)
     assert r["backend_verified"] is False
+
+
+# --- Real snpe-diagview per-layer format (first real log: conversion host x86_64, QAIRT 2.33.2) -------
+# Lines copied from results/raw/conversion/host_dev/diag.txt; re-confirm on the first RB5 log.
+REAL_DIAG_HEAD = (
+    "Software library version: 2.33.2.250410134701_117956\n"
+    "SNPE Execute Statistics (Averaged):\n"
+    "----------------------------------------\n"
+    "  Total Inference Time: 36222 us\n"
+    "  Per-Subnet Execution Times: \n"
+    "  ------------------------------\n"
+    "    Subnet 0 (CPU) : 36137 us\n"
+    "  Per-Layer Execution Times: \n"
+    "  ------------------------------\n"
+)
+REAL_DIAG_LAYERS = [
+    "    0: _node_Conv_102 : 1919 us : CPU",
+    "    1: _node_relu : 293 us : CPU",
+    "    2: _node_max_pool2d : 355 us : CPU",
+    "    65: _node_relu_24 : 206 us : CPU",
+    "    66: _node_conv2d_28 : 112 us : CPU",
+]
+
+
+def _real_diag(layers):
+    return REAL_DIAG_HEAD + "\n".join(layers) + "\n"
+
+
+def test_real_diag_all_cpu_verified(tmp_path):
+    r = _verified("Successfully executed graph encoder_float\n", "cpu", diag=_real_diag(REAL_DIAG_LAYERS), tmp_path=tmp_path)
+    assert r["backend_verified"] is True and r["actual_runtime"] == "CPU" and r["source"] == "diag"
+    assert len(r["evidence"]) == len(REAL_DIAG_LAYERS)
+
+
+def test_real_diag_one_gpu_layer_when_cpu_requested_not_verified(tmp_path):
+    layers = REAL_DIAG_LAYERS[:2] + ["    2: _node_max_pool2d : 355 us : GPU"] + REAL_DIAG_LAYERS[3:]
+    r = _verified("Successfully executed graph encoder_float\n", "cpu", diag=_real_diag(layers), tmp_path=tmp_path)
+    assert r["backend_verified"] is False and r["reason"] == "diag layers name different runtimes"
+
+
+def test_real_diag_with_fallback_line_not_verified(tmp_path):
+    diag = _real_diag(REAL_DIAG_LAYERS) + "  GPU runtime unavailable, falling back to CPU\n"
+    r = _verified("Successfully executed graph encoder_float\n", "cpu", diag=diag, tmp_path=tmp_path)
+    assert r["backend_verified"] is False and r["actual_runtime"] == "CPU" and "fallback" in r["reason"]
+
+
+def test_real_diag_request_only_text_is_not_evidence(tmp_path):
+    diag = REAL_DIAG_HEAD + "    $ snpe-net-run --runtime_order cpu : 0 us : CPU\n"
+    r = _verified("", "cpu", diag=diag, tmp_path=tmp_path)
+    assert r["backend_verified"] is False and r["evidence"] == []

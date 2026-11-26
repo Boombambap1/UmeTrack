@@ -59,7 +59,7 @@ Converted 2026-11-26 on the conversion host; details, verbatim warnings and raw-
 | Output tensor | `features`, Float_32, `[1, 6, 6, 72]`, **NHWC**; raw file `Result_<i>/features.raw`, 10,368 bytes |
 | Layout transform | The converter reorders to spatial-last (`perform_axes_to_spatial_first_order=True`). Input: NHWC bytes equal NCHW for C = 1. Output: transpose NHWC `[1,6,6,72]` -> NCHW `[1,72,6,6]` explicitly (`(0, 3, 1, 2)`). |
 | Operator warnings | 25 x `WARNING_OP_VERSION_NOT_SUPPORTED: Operation Relu Not Supported. Expected operator version: [1, 6], instead got version: [14]`; onnxsim absent so simplification skipped; dry-run legacy checker flags Relu/MaxPool and crashes (SDK bug). Explained in the summary. |
-| Development check on the conversion host | x86_64 `snpe-net-run` CPU, 8 Part B dev crops, NHWC -> NCHW: max_abs 2.265e-06, worst crop rel_l2 6.919e-07 (limit 1e-3 / 1e-4). Wrong-layout read: max_abs 1.89, so the mapping is confirmed. Not the RB5 experiment. |
+| Development check on the conversion host | x86_64 `snpe-net-run` CPU, 8 Part B dev crops, NHWC -> NCHW: max_abs 2.265e-06, worst crop rel_l2 6.919e-07 (limit 1e-3 / 1e-4); backend_verified True from per-layer diag (all 67 CPU). Wrong-layout read: max_abs 1.89, so the mapping is confirmed. Not the RB5 experiment. |
 | Pending | Steven's seven-crop smoke check; RB5 CPU run on Steven's canonical crops. |
 
 ## Board raw files and layout

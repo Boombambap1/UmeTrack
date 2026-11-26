@@ -17,7 +17,8 @@ Overall PASS only if both are true. backend_verified needs POSITIVE evidence of 
 executed: per-layer runtimes from --diag-log (snpe-diagview output) when given, else explicit runtime lines
 in the snpe-net-run log. Request-only text (flags such as --use_gpu, echoed commands, "requested runtime")
 is never evidence, and any fallback / unavailable / not supported / failed-to-create / error line makes it
-false whatever else appears. Patterns are strict and still to be confirmed on the first real board logs.
+false whatever else appears. The snpe-diagview per-layer format ("0: <layer> : <t> us : <RUNTIME>") was
+confirmed on the conversion host's x86_64 log; it and the stdout patterns must be re-confirmed on the first RB5 log.
 """
 
 import argparse
@@ -44,8 +45,14 @@ RUNTIME_PATTERNS = [
     re.compile(rf"\b({_RT})\s+runtime\s+(?:selected|is used|in use)\b", re.I),
 ]
 # Per-layer runtime in snpe-diagview text output of SNPEDiag.log (preferred evidence when given).
-# Format also to be confirmed on the first real diag log.
-DIAG_LAYER_PATTERN = re.compile(rf"\blayer\b.*?\bruntime\s*[:=]?\s*({_RT})\b", re.I)
+# Real format (QAIRT 2.33.2 snpe-diagview, under "Per-Layer Execution Times:"), confirmed on the conversion
+# host's x86_64 log results/raw/conversion/host_dev/diag.txt; re-confirm on the first RB5 log:
+#     "    0: _node_Conv_102 : 1919 us : CPU"
+# The runtime must be the whole last field of the line. The earlier generic form is kept as a fallback.
+DIAG_LAYER_PATTERNS = [
+    re.compile(rf"^\s*\d+:\s*\S+\s*:\s*\d+(?:\.\d+)?\s*us\s*:\s*({_RT})\s*$", re.I),
+    re.compile(rf"\blayer\b.*?\bruntime\s*[:=]?\s*({_RT})\b", re.I),
+]
 # Any of these anywhere in the evidence -> not verified, whatever else appears (deliberately broad).
 NEGATIVE_PATTERN = re.compile(
     r"fall(?:ing|s)?[\s_-]*back|unavailable|not available|not supported|unsupported|"
@@ -85,10 +92,14 @@ def parse_diag(diag_text):
     """Return (runtime, layer_lines) from per-layer diag output; None unless every layer names the same runtime."""
     found, evidence = set(), []
     for line in (diag_text or "").splitlines():
-        m = DIAG_LAYER_PATTERN.search(line)
-        if m:
-            found.add(m.group(1).upper())
-            evidence.append(line.strip())
+        if _request_only(line):
+            continue
+        for pat in DIAG_LAYER_PATTERNS:
+            m = pat.search(line)
+            if m:
+                found.add(m.group(1).upper())
+                evidence.append(line.strip())
+                break
     return (found.pop() if len(found) == 1 else None), evidence
 
 

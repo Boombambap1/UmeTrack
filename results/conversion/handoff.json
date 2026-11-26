@@ -95,8 +95,8 @@
     "feature_mae": 4.324e-08,
     "feature_rmse": 8.309e-08,
     "numeric_match": true,
-    "backend_verified": false,
-    "backend_note": "as measured: reader diag pattern does not match snpe-diagview's real per-layer format ('0: _node_Conv_102 : 1919 us : CPU'); the diag log lists all 67 layers on CPU. Patterns not changed.",
+    "backend_verified": true,
+    "backend_note": "requested CPU; all 67 snpe-diagview per-layer lines report CPU; no fallback/unavailable/error lines. First run was False as measured (parser did not match the real format '0: _node_Conv_102 : 1919 us : CPU'); parser updated to that format (safety rules kept) and re-run. Format confirmed on the conversion host's x86_64 log; re-confirm on the first RB5 log.",
     "layout_check": "reading outputs as NCHW (wrong) gives max_abs 1.890, rel_l2 1.281; only NHWC -> NCHW matches",
     "summary": "results/conversion/host_dev_check/summary.md"
   },

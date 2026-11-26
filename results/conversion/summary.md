@@ -86,10 +86,12 @@ Tolerance `tolerances.host_cpu_vs_onnx_dev` (max_abs 1e-3, per-crop rel_l2 1e-4)
 | RMSE | 8.309e-08 | — | — |
 
 - numeric_match: **True**.
-- backend_verified: **False, as measured**. The reader's diag pattern did not match `snpe-diagview`'s real per-layer
-  format (`0: _node_Conv_102 : 1919 us : CPU`), so it reported "no per-layer runtime in diag log". The diag log
-  itself lists all 67 layers as `CPU` and `Subnet 0 (CPU)`; no error/fallback lines appear in the run or diag log.
-  The patterns were not changed here; updating them against this first real log is a separate, reviewed change.
+- backend_verified: **True** (requested CPU; all 67 per-layer lines in the snpe-diagview output report `CPU`; no
+  fallback/unavailable/error lines in the run or diag log). First run: **False, as measured**, because the reader's
+  diag pattern did not match the real per-layer format (`0: _node_Conv_102 : 1919 us : CPU`) and it reported
+  "no per-layer runtime in diag log". The parser was then updated to this format in a separate commit (all safety
+  rules kept, tests from real-format lines) and the comparison re-run. The format is confirmed on the conversion
+  host's x86_64 log only and must be re-confirmed on the first RB5 log.
 - Layout mapping check: reading the same outputs as NCHW `[1,72,6,6]` (wrong) gives max_abs 1.890e+00, rel_l2
   1.281e+00, so only the NHWC -> NCHW mapping matches.
 - Full per-crop table: `results/conversion/host_dev_check/summary.md`.

@@ -4,10 +4,10 @@
 
 **Purpose: development only - Part B regenerated crops, not a formal comparison**
 
-**Result: NOT PASS (numeric_match=True, backend_verified=False)** on 8 crops.
+**Result: PASS** on 8 crops.
 
 - numeric_match: **True** (tolerances `tolerances.host_cpu_vs_onnx_dev`, declared before this run, unchanged)
-- backend_verified: **False** — requested `CPU`, actual from log `None` (no per-layer runtime in diag log)
+- backend_verified: **True** — requested `CPU`, actual from log `CPU` (diag runtime matches request)
 
 | Check | Limit | Measured (worst) | Within |
 | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ Diagnostic, host vs PyTorch: max_abs 1.550e-06, rel_l2 3.043e-07.
 Host output: `features.raw` dims [1, 6, 6, 72] layout NHWC -> explicit transpose to NCHW [1,72,6,6]. Result_<i> matched to input_list line i, reference by crop_id.
 Reference: `artifacts/reference/onnx_features.npy` sha256 `2e54dd25e3129b5c978aca03289b64c8b0b19d7ef4bcc10daffbafc4f2f6a414`.
 Run log: `results/raw/conversion/host_dev/net_run.log` sha256 `4bc4979e23b8cba09deaed7e52f2b9491e35ced3c9da8779cc498e0f60281484`.
-Runtime evidence (source: diag): none
+Runtime evidence (source: diag): `0: _node_Conv_102 : 1919 us : CPU`; `1: _node_relu : 293 us : CPU`; `2: _node_max_pool2d : 355 us : CPU`; `3: _node_Conv_104 : 1963 us : CPU`; `4: _node_relu_1 : 448 us : CPU`
 Negative lines: none
 
 ## Per crop
