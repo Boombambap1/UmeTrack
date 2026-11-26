@@ -1,0 +1,9 @@
+idx,raw_file,row,recording,frame,hand_idx,cam_idx,crop_id,raw_sha256,purpose
+0,crop_000_row0000.raw,0,raw_data/real/separate_hand/testing/user_19/recording_00,0,0,1,user_19-recording_00:000000:hand0:camera1,5c7c2907651a4227ed6d981c279e49e47dc5017d66fab745c7734b846a8d1f36,development
+1,crop_001_row0008.raw,8,raw_data/real/separate_hand/testing/user_19/recording_00,2,1,2,user_19-recording_00:000002:hand1:camera2,abf44015138e5a8b517f87cb21888fbefb1177207d3b414d1d563b33be9f2a69,development
+2,crop_002_row0017.raw,17,raw_data/real/separate_hand/testing/user_19/recording_00,5,1,2,user_19-recording_00:000005:hand1:camera2,d5bbb5cd3349923967c8a831e8dad70ee342aea6f1576b63e311d68fc8e1ec34,development
+3,crop_003_row0025.raw,25,raw_data/real/separate_hand/testing/user_19/recording_00,8,0,2,user_19-recording_00:000008:hand0:camera2,de37ab4491c87a12392926bd295e667b73e8e090613df9c122c9d42dcdad81c2,development
+4,crop_004_row0034.raw,34,raw_data/real/separate_hand/testing/user_19/recording_00,11,0,2,user_19-recording_00:000011:hand0:camera2,73369bbdfe7a35e7ed3c5ccf4614b610accbcb5bf62ca5458f61b927d2958987,development
+5,crop_005_row0042.raw,42,raw_data/real/separate_hand/testing/user_19/recording_00,14,0,1,user_19-recording_00:000014:hand0:camera1,3cbe8f0b0dcb5815d9cdca0fd3d7337a9d06be5579b5e34ff1acfcf529d2c6ef,development
+6,crop_006_row0051.raw,51,raw_data/real/separate_hand/testing/user_19/recording_00,17,0,1,user_19-recording_00:000017:hand0:camera1,3c0e1c8bbdc7dc8bef531622e3bc946d7c43765ac07086b45cdbebce0b5e829e,development
+7,crop_007_row0059.raw,59,raw_data/real/separate_hand/testing/user_19/recording_00,19,1,2,user_19-recording_00:000019:hand1:camera2,77443b35c33a2400df42117ab23e0228c5050c7b7e57b0a374fba3c53fd8e1c0,development
