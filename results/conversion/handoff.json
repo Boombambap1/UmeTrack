@@ -1,5 +1,5 @@
 {
-  "status": "float DLC converted on the conversion host; Steven's seven-crop smoke check and RB5 CPU run pending",
+  "status": "float DLC converted on the conversion host; smoke check on the conversion host (x86_64 CPU) passed on Steven's seven frozen crops; RB5 CPU run (Steven's) pending",
   "lane": "Part B float encoder delivery",
   "source": {
     "upstream_commit": "e263ec0844abf73457468a050a75853444d33d69",
@@ -43,7 +43,7 @@
       "MaxPool: unsupported version | storage_order: unsupported in Converter",
       "NameError: name 'sys' is not defined  (onnx_loader.py line 376, sys.exit(0); SDK bug, dry run exit 1)"
     ],
-    "warnings_explanation": "Dry-run table is the legacy checker (LATEST_SUPPORTED_ONNX_VERSION = 11). MaxPool-12 is registered by the converter and storage_order is 0 (default). Relu-14 is not registered ([1, 6]); the conversion path only warns and uses its Relu translation; Relu-13/14 only added data types, float32 Relu is max(x, 0). onnxsim is not in the SDK's tested list, so optional simplification was skipped. Numerical evidence: development check on the conversion host below; RB5 CPU run still required."
+    "warnings_explanation": "Dry-run table is the legacy checker (LATEST_SUPPORTED_ONNX_VERSION = 11). MaxPool-12 is registered by the converter and storage_order is 0 (default). Relu-14 is not registered ([1, 6]); the conversion path only warns and uses its Relu translation; Relu-13/14 only added data types, float32 Relu is max(x, 0). onnxsim is not in the SDK's tested list, so optional simplification was skipped. Numerical evidence: development check and smoke check on the conversion host below; RB5 CPU run still required."
   },
   "io": {
     "batch_size": 1,
@@ -74,15 +74,25 @@
     }
   },
   "real_crop_validation": {
-    "note": "Steven's seven-crop smoke archive; not run (archive not on Part B's Mac yet).",
-    "source_manifest_sha256": "pending",
-    "declared_atol": "pending",
-    "declared_rtol": "pending",
-    "declared_tolerances_in_config": "tolerances.board_cpu_vs_onnx: max_abs 1e-3, per-crop rel_l2 1e-4 (proposed, pending agreement)",
-    "feature_mae": "pending",
-    "feature_rmse": "pending",
-    "feature_max_absolute_error": "pending",
-    "result": "pending"
+    "note": "Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment: Steven's seven frozen smoke crops vs Steven's expected-nchw reference features. Host runtime only; says nothing about RB5 CPU accuracy or timing. The RB5 CPU run is Steven's.",
+    "source_manifest_sha256": "cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5",
+    "source_manifest_note": "archive-internal manifest.json, pinned by manifests/smoke-exchange.json; archive artifacts/qualcomm-smoke-2026-11-21.zip sha256 fcbcad10e9b53795451506380734bc9f8ba6f883df725230e9c0b4e52eafbdac (151,000 bytes); every input and reference file verified against its sha256 in that manifest",
+    "declared_atol": "max_abs 1e-3 (tolerances.host_cpu_vs_reference_smoke)",
+    "declared_rtol": "per-crop rel_l2 1e-4, rel_l2 = ||host - reference|| / ||reference|| (not an elementwise rtol)",
+    "declared_tolerances_in_config": "tolerances.host_cpu_vs_reference_smoke: max_abs 1e-3, per-crop rel_l2 1e-4; proposed, pending agreement with Steven; declared and committed before the run",
+    "runtime": "x86_64-linux-clang snpe-net-run, --runtime_order cpu --profiling_level detailed, exit 0; QAIRT 2.33.2.250410134701_117956",
+    "layout_mapping": "host output NHWC [1,6,6,72] -> transpose (0,3,1,2) -> NCHW; reference read as NCHW (pinned expected_layout)",
+    "feature_mae": 4.189e-08,
+    "feature_rmse": 6.442e-08,
+    "feature_max_absolute_error": 1.073e-06,
+    "worst_crop_rel_l2": 4.223e-07,
+    "overall_rel_l2": 3.006e-07,
+    "numeric_match": true,
+    "backend_verified": true,
+    "backend_note": "requested CPU; all 67 snpe-diagview per-layer lines report CPU; no fallback/unavailable/error lines",
+    "layout_check": "reading outputs as NCHW (wrong) gives max_abs 2.027, rel_l2 1.285; only NHWC -> NCHW matches",
+    "result": "PASS on the conversion host (smoke check, x86_64 CPU); RB5 CPU run on Steven's crops still pending (Steven's)",
+    "summary": "results/conversion/host_smoke_check/summary.md (per-crop table)"
   },
   "development_check_on_conversion_host": {
     "label": "development check on the conversion host - not the RB5 experiment, not Steven's frozen crops",
@@ -110,6 +120,7 @@
     "docs/env_conversion_host.md",
     "docs/tensor-contract.md#converted-float-dlc-part-b-d6",
     "results/conversion/host_dev_check/summary.json",
+    "results/conversion/host_smoke_check/summary.json",
     "raw logs: ignored results/raw/conversion/ (hashes in summary.md)"
   ],
   "note": "No null field is evidence of completion. This checklist does not replace the execution.json required for returned board outputs. Keep secrets and SDK/model binaries outside Git."

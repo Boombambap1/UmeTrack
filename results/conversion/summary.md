@@ -63,8 +63,8 @@ Dry run (`--dry_run info`, exit 1) listed `Relu: unsupported version` for every 
 In short: the dry-run table comes from the legacy checker (`LATEST_SUPPORTED_ONNX_VERSION = 11`); MaxPool-12 is
 registered by the converter and `storage_order` is 0 (default). Relu-14 is not registered ([1, 6]); the conversion
 path only warns and uses its Relu translation. Relu-13/14 only added data types; for float32 Relu is `max(x, 0)`.
-onnxsim is not in the SDK's tested list, so the optional simplification was skipped. The development check below
-is the numerical evidence for this DLC on the host; the RB5 CPU run is still required.
+onnxsim is not in the SDK's tested list, so the optional simplification was skipped. The development and smoke checks below
+are the numerical evidence for this DLC on the host; the RB5 CPU run is still required.
 
 ## Development check on the conversion host (not the RB5 experiment)
 
@@ -96,11 +96,35 @@ Tolerance `tolerances.host_cpu_vs_onnx_dev` (max_abs 1e-3, per-crop rel_l2 1e-4)
   1.281e+00, so only the NHWC -> NCHW mapping matches.
 - Full per-crop table: `results/conversion/host_dev_check/summary.md`.
 
-## Steven's seven-crop smoke check
+## Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment
 
-**Pending**: the smoke archive `artifacts/qualcomm-smoke-2026-11-21.zip` (sha256 `fcbcad10…`, pinned in
-`manifests/smoke-exchange.json`) is not on this Mac. To be run once Steven provides it, verified with
-`scripts/canonical_crops.py --set smoke`.
+Steven's seven frozen smoke crops (frame 0 of user_19 and user_23 `recording_00`) run through `encoder_float.dlc`
+with the host's x86_64 `snpe-net-run` (`--runtime_order cpu --profiling_level detailed`, exit 0), compared with
+Steven's own reference features (`expected-nchw/`). This is a host check: it says nothing about RB5 CPU accuracy or
+timing. **The RB5 CPU run on Steven's crops is Steven's and is still pending.**
+
+- Archive `artifacts/qualcomm-smoke-2026-11-21.zip` (151,000 bytes, sha256 `fcbcad10e9b53795451506380734bc9f8ba6f883df725230e9c0b4e52eafbdac`)
+  verified by `scripts/canonical_crops.py --set smoke` against `manifests/smoke-exchange.json` (internal manifest
+  `cc0f5ca7…`, input list `59c41769…`). Inputs and `input_list.txt` copied to the host unchanged (sha256 re-checked
+  there); host DLC sha256 re-checked (`d0342d35…`).
+- References: `canonical_crops.py --references` extracted only `expected-nchw/` into their own folder; every file is
+  re-verified against `expected_sha256` in the pinned manifest and matched by crop_id in the verified order
+  (`read_snpe_outputs.py --reference-raw-dir`). Inputs, references and runtime outputs are kept in separate folders.
+- Tolerance `tolerances.host_cpu_vs_reference_smoke` (max_abs 1e-3, per-crop rel_l2 1e-4; proposed, pending agreement
+  with Steven) declared and committed before the run.
+
+| Metric (7 crops, host NHWC -> NCHW vs Steven's NCHW) | Value | Limit | Within |
+| --- | --- | --- | --- |
+| max_abs | 1.073e-06 (crop 6) | 1.0e-03 | yes |
+| worst per-crop rel_l2 | 4.223e-07 (crop 4) | 1.0e-04 | yes |
+| overall rel_l2 | 3.006e-07 | — | — |
+| MAE | 4.189e-08 | — | — |
+| RMSE | 6.442e-08 | — | — |
+
+- numeric_match: **True**. backend_verified: **True** (requested CPU; all 67 snpe-diagview per-layer lines report
+  `CPU`; no fallback/unavailable/error lines).
+- Layout mapping check: reading the same outputs as NCHW (wrong) gives max_abs 2.027e+00, rel_l2 1.285e+00.
+- Per-crop max_abs / MAE / RMSE / rel_l2: `results/conversion/host_smoke_check/summary.md`.
 
 ## Raw logs (ignored `results/raw/`)
 
@@ -117,4 +141,8 @@ Tolerance `tolerances.host_cpu_vs_onnx_dev` (max_abs 1e-3, per-crop rel_l2 1e-4)
 | conversion/host_dev/net_run.log | `4bc4979e23b8cba09deaed7e52f2b9491e35ced3c9da8779cc498e0f60281484` |
 | conversion/host_dev/diag.txt | `db4e7c6d64c95d0a5f506639dc2f8d06d8bdcd9faa1cd7580d4df379e4a8cb41` |
 | conversion/host_dev/net_run.help.txt | `9ab760a797c20c68b5a52ff4dabe72907076f1c5f3402d4ede6ed7f1d4013e72` |
+| conversion/host_smoke/net_run.log | `2952b356441002b64a531ebcca8cdb8fe1895d3a10185f44b017751131bb7b70` |
+| conversion/host_smoke/net_run.exit (`exit=0`) | `19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061` |
+| conversion/host_smoke/diag.txt | `65aaa4452d29ed0c81dcbc091158f2a81a0d8bd622d412901ff3b2d50c9ccdb8` |
+| conversion/host_smoke/snpe_diag/SNPEDiag.log (moved out of `output/`; `SNPEDiag_0.log` identical) | `d83e6ed878ce26e196baf028d651199dc9f050aa928734df9f450f207a1b1d17` |
 | conversion_host/ (env setup logs) | listed in `docs/env_conversion_host.md` |

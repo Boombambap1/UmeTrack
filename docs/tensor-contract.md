@@ -60,7 +60,8 @@ Converted 2026-11-26 on the conversion host; details, verbatim warnings and raw-
 | Layout transform | The converter reorders to spatial-last (`perform_axes_to_spatial_first_order=True`). Input: NHWC bytes equal NCHW for C = 1. Output: transpose NHWC `[1,6,6,72]` -> NCHW `[1,72,6,6]` explicitly (`(0, 3, 1, 2)`). |
 | Operator warnings | 25 x `WARNING_OP_VERSION_NOT_SUPPORTED: Operation Relu Not Supported. Expected operator version: [1, 6], instead got version: [14]`; onnxsim absent so simplification skipped; dry-run legacy checker flags Relu/MaxPool and crashes (SDK bug). Explained in the summary. |
 | Development check on the conversion host | x86_64 `snpe-net-run` CPU, 8 Part B dev crops, NHWC -> NCHW: max_abs 2.265e-06, worst crop rel_l2 6.919e-07 (limit 1e-3 / 1e-4); backend_verified True from per-layer diag (all 67 CPU). Wrong-layout read: max_abs 1.89, so the mapping is confirmed. Not the RB5 experiment. |
-| Pending | Steven's seven-crop smoke check; RB5 CPU run on Steven's canonical crops. |
+| Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment | Steven's 7 frozen smoke crops vs his `expected-nchw` features (each verified against the pinned manifest), NHWC -> NCHW: max_abs 1.073e-06, worst crop rel_l2 4.223e-07 (limit 1e-3 / 1e-4, `tolerances.host_cpu_vs_reference_smoke`, proposed); backend_verified True (all 67 CPU). Wrong-layout read: max_abs 2.03. |
+| Pending | RB5 CPU run on Steven's canonical crops (Steven's). |
 
 ## Board raw files and layout
 
@@ -122,4 +123,5 @@ can be filled. DSP/INT8 allowances are not yet proposed; the ORT INT8 preview
 (`results/int8_preview/summary.md`) is characterisation only, not SNPE/DSP and not pass/fail.
 
 Measured so far: ONNX vs PyTorch on the 60-crop development set, worst max_abs 3.695e-6 and worst per-crop
-rel_l2 9.078e-7 (`results/onnx_parity/summary.md`). No board result exists yet.
+rel_l2 9.078e-7 (`results/onnx_parity/summary.md`). Conversion-host checks (x86_64, not the board) are in
+"Converted float DLC" above. No board result exists yet.
