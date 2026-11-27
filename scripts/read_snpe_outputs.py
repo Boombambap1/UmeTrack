@@ -9,6 +9,9 @@ crop_id, not by position. Compares against tolerances.board_cpu_vs_onnx (never c
 --purpose formal|smoke requires --canonical-inputs: a directory made by scripts/canonical_crops.py whose
 raw inputs, input list and package manifest are re-verified against Part A's pinned sha256 values; crop
 IDs then come from that verified package, and anything that does not verify is refused.
+--reference-raw-dir (formal/smoke only) compares against Part A's own NCHW reference features instead of Part
+B's ONNX features: every file is re-verified against expected_sha256 in the same pinned package manifest,
+matched by crop_id in the verified order, and refused on any mismatch, missing/extra file or wrong size.
 
 Two separate verdicts:
   numeric_match    - every check within tolerance
@@ -217,11 +220,28 @@ TARGETS = {
                 "Part B development crops. Says nothing about RB5 CPU accuracy or timing.",
     },
 }
+# Conversion host on Part A's frozen crops vs Part A's reference features (--reference-raw-dir).
+HOST_CANONICAL = {
+    "title": "Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment — snpe-net-run vs Part A's reference features",
+    "who": "Host",
+    "note": "Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment: Part A's frozen crops and "
+            "reference features, x86_64 host runtime. Says nothing about RB5 CPU accuracy or timing; the RB5 CPU run is Part A's.",
+}
+
+
+def target_info(target: str, purpose: str) -> dict:
+    if target == "conversion-host" and purpose != "dev":
+        t = dict(HOST_CANONICAL)
+        if purpose == "formal":
+            t["title"] = t["title"].replace("Smoke check", "Formal-set check")
+            t["note"] = t["note"].replace("Smoke check", "Formal-set check")
+        return t
+    return TARGETS[target]
 
 
 def _markdown(s: dict) -> str:
     c, o, b = s["checks"], s["overall"], s["backend"]
-    t = TARGETS[s["target"]]
+    t = target_info(s["target"], s["purpose"])
     lines = [
         f"# {t['title']}",
         "",
@@ -241,11 +261,15 @@ def _markdown(s: dict) -> str:
         f"(idx {o['worst_crop_rel_l2']['row']}) | {c['rel_l2_per_crop']['pass']} |",
         "",
         f"Overall: max_abs {o['max_abs']:.3e}, mean_abs (MAE) {o['mean_abs']:.3e}, RMSE {o['rmse']:.3e}, rel_l2 {o['rel_l2']:.3e}.",
-        f"Diagnostic, {t['who'].lower()} vs PyTorch: max_abs {s['vs_torch']['max_abs']:.3e}, rel_l2 {s['vs_torch']['rel_l2']:.3e}.",
+        (f"Diagnostic, {t['who'].lower()} vs PyTorch: max_abs {s['vs_torch']['max_abs']:.3e}, rel_l2 {s['vs_torch']['rel_l2']:.3e}."
+         if s["vs_torch"] else "No PyTorch diagnostic: Part B's PyTorch features come from regenerated crops, not Part A's frozen ones."),
         "",
         f"{t['who']} output: `{s['output_file']}` dims {s['output_dims']} layout {s['output_layout']} "
         "-> explicit transpose to NCHW [1,72,6,6]. Result_<i> matched to input_list line i, reference by crop_id.",
-        f"Reference: `{s['reference']}` sha256 `{s['reference_sha256']}`.",
+        (f"Reference: Part A's features `{s['reference']}` (NCHW), {len(s['reference_files'])} files, each sha256 verified "
+         f"against the pinned package manifest (sha256 `{s['canonical']['package_manifest_sha256']}`, pinned by "
+         f"`{s['canonical']['manifest']}`); matched by crop_id in the verified order."
+         if s.get("reference_files") else f"Reference: `{s['reference']}` sha256 `{s['reference_sha256']}`."),
         f"Run log: `{s['run_log']}` sha256 `{s['run_log_sha256']}`.",
         f"Runtime evidence (source: {b['source']}): " + ("; ".join(f"`{e}`" for e in b["evidence"][:5]) if b["evidence"] else "none"),
         "Negative lines: " + ("; ".join(f"`{e}`" for e in b["negative"][:5]) if b["negative"] else "none"),
@@ -285,7 +309,13 @@ def main():
                     help="where snpe-net-run ran; conversion-host labels the run a development check, not the RB5 experiment")
     ap.add_argument("--tolerance-key", default="board_cpu_vs_onnx", help="key under tolerances: in the config")
     ap.add_argument("--canonical-inputs", default=None, help="for formal/smoke: dir made by scripts/canonical_crops.py")
+    ap.add_argument("--reference-raw-dir", default=None,
+                    help="formal/smoke only: Part A's reference features (made by canonical_crops.py --references); "
+                         "every file is re-verified against expected_sha256 in the pinned package manifest, matched by "
+                         "crop_id in the verified order; replaces --reference/--reference-manifest/--torch-reference")
     args = ap.parse_args()
+    if args.reference_raw_dir and args.purpose == "dev":
+        raise SystemExit("--reference-raw-dir requires --purpose formal|smoke (Part A's verified frozen crops)")
 
     cfg = load_config(REPO / args.config)
     output_file = args.output_file or f"{cfg['encoder']['output']['name']}.raw"
@@ -308,10 +338,24 @@ def main():
         input_list = pkg / "input_list.txt"
         ids = [r["crop_id"] for r in canonical["inputs"]]
         purpose_label = f"{args.purpose} - Part A frozen crops verified against {canonical['pinned']['manifest']}"
-    ref_rows = reference_rows(REPO / args.reference_manifest, ids)
-
     board = read_outputs(REPO / args.outputs_dir, len(ids), output_file, dims, args.output_layout)
-    ref = np.load(REPO / args.reference)[ref_rows]
+    out_shape = cfg["encoder"]["output"]["shape"]  # canonical NCHW [1, 72, 6, 6]
+    ref_files = None
+    if args.reference_raw_dir:
+        ref_dir = REPO / args.reference_raw_dir
+        try:
+            ref_files = canonical_crops.verify_references(
+                REPO / args.canonical_inputs, args.purpose, ref_dir, int(np.prod(out_shape)) * 4)
+        except canonical_crops.CanonicalError as e:
+            raise SystemExit(f"refusing reference features: {e}")
+        if [r["crop_id"] for r in ref_files] != ids:
+            raise SystemExit("reference crop_ids/order differ from the verified inputs")
+        # Part A's files are NCHW (pinned expected_layout); read as such, no transpose.
+        ref = np.concatenate([np.fromfile(ref_dir / r["file"], dtype="<f4").reshape(out_shape) for r in ref_files])
+        ref_rows = [r["idx"] for r in ref_files]
+    else:
+        ref_rows = reference_rows(REPO / args.reference_manifest, ids)
+        ref = np.load(REPO / args.reference)[ref_rows]
     want = [len(ids), *cfg["encoder"]["output"]["shape"][1:]]
     if list(board.shape) != want or list(ref.shape) != want:
         raise SystemExit(f"shape mismatch: board {list(board.shape)}, reference {list(ref.shape)}, want {want}")
@@ -320,11 +364,13 @@ def main():
         raise SystemExit(f"tolerances.{args.tolerance_key} is not declared in {args.config}; declare it before comparing")
     tol = cfg["tolerances"][args.tolerance_key]
     result = compare(ref, board, tol)
-    torch_ref = np.load(REPO / args.torch_reference)[ref_rows].astype(np.float64)
-    vs_torch = {
-        "max_abs": float(np.abs(board - torch_ref).max()),
-        "rel_l2": float(np.linalg.norm(board - torch_ref) / np.linalg.norm(torch_ref)),
-    }
+    vs_torch = None
+    if ref_files is None:  # Part B's PyTorch features are for Part B's crops only
+        torch_ref = np.load(REPO / args.torch_reference)[ref_rows].astype(np.float64)
+        vs_torch = {
+            "max_abs": float(np.abs(board - torch_ref).max()),
+            "rel_l2": float(np.linalg.norm(board - torch_ref) / np.linalg.norm(torch_ref)),
+        }
     run_log = REPO / args.run_log
     diag_log = REPO / args.diag_log if args.diag_log else None
     backend = backend_check(run_log, args.requested_runtime, diag_log)
@@ -344,14 +390,15 @@ def main():
         "canonical": None if canonical is None else canonical["pinned"],
         "input_list": rel(input_list),
         "input_list_sha256": sha256_file(input_list),
-        "reference": rel(REPO / args.reference),
-        "reference_sha256": sha256_file(REPO / args.reference),
+        "reference": rel(REPO / (args.reference_raw_dir or args.reference)),
+        "reference_sha256": None if ref_files else sha256_file(REPO / args.reference),
+        "reference_files": ref_files,
         "run_log": rel(run_log),
         "run_log_sha256": sha256_file(run_log) if run_log.exists() else None,
         "diag_log": rel(diag_log) if diag_log else None,
         "diag_log_sha256": sha256_file(diag_log) if diag_log and diag_log.exists() else None,
         "target": args.target,
-        "target_note": TARGETS[args.target]["note"],
+        "target_note": target_info(args.target, args.purpose)["note"],
         "tolerance_key": args.tolerance_key,
         "tolerances": tol,
         "vs_torch": vs_torch,
@@ -371,8 +418,8 @@ def main():
     np.save(feats, board)
 
     c, o = result["checks"], result["overall"]
-    if TARGETS[args.target]["note"]:
-        print(f"[board] {TARGETS[args.target]['note']}")
+    if target_info(args.target, args.purpose)["note"]:
+        print(f"[board] {target_info(args.target, args.purpose)['note']}")
     print(f"[board] purpose: {purpose_label}")
     print(f"[board] {verdict_line(summary)}: {len(ids)} crops")
     print(f"[board] numeric_match {numeric_match}: max_abs worst {c['max_abs']['worst']:.3e} (limit {c['max_abs']['limit']:.1e}); "

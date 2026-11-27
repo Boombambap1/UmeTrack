@@ -16,6 +16,8 @@ are used as-is (never re-encoded). Anything that does not verify is refused.
 
 CLI: verify an archive and extract it into a NEW directory, writing canonical_inputs.json (the ordered
 input_file -> crop_id list that read_snpe_outputs.py uses for --purpose formal/smoke).
+With --references: extract only Part A's reference features (expected_file / expected_sha256 in the pinned
+package manifest) into a separate NEW directory; read_snpe_outputs.py --reference-raw-dir re-verifies them.
 """
 
 import argparse
@@ -190,17 +192,108 @@ def verify_extracted(package_dir: Path, set_name: str) -> dict:
     return verified
 
 
+def _expected_records(manifest: dict):
+    """Ordered (crop_id, expected_file, expected_sha256) for Part A's reference features in a package manifest."""
+    crops = manifest.get("crops") if isinstance(manifest, dict) else None
+    if not isinstance(crops, list) or not all(
+        isinstance(r, dict) and {"crop_id", "expected_file", "expected_sha256"} <= r.keys() for r in crops
+    ):
+        raise CanonicalError(
+            "package manifest has no crops[] with crop_id/expected_file/expected_sha256; this package carries no "
+            "pinned reference features (ask Part A instead of guessing)"
+        )
+    if manifest.get("expected_layout") != "NCHW" or manifest.get("expected_dtype") != "<f4":
+        raise CanonicalError(
+            f"package manifest reference layout/dtype {manifest.get('expected_layout')}/{manifest.get('expected_dtype')}, "
+            "expected NCHW/<f4"
+        )
+    for r in crops:
+        pp = PurePosixPath(r["expected_file"])
+        if pp.is_absolute() or ".." in pp.parts:
+            raise CanonicalError(f"unsafe expected_file path: {r['expected_file']}")
+    return [(r["crop_id"], r["expected_file"], r["expected_sha256"]) for r in crops]
+
+
+def extract_references(set_name: str, archive: Path, out_dir: Path) -> list:
+    """Verify the archive, then extract ONLY Part A's reference features into a NEW directory (kept apart from
+    inputs and runtime outputs). Each file is checked against expected_sha256 in the pinned package manifest."""
+    _, prefix, _, pkg_name = verify_archive(set_name, archive)
+    out_dir = Path(out_dir)
+    if out_dir.exists():
+        raise CanonicalError(f"{out_dir} exists; extract into a new directory")
+    with zipfile.ZipFile(archive) as z:
+        refs = _expected_records(json.loads(z.read(pkg_name)))
+        blobs = []
+        for cid, f, digest in refs:
+            name = prefix + f
+            if name not in z.namelist() or _sha(z.read(name)) != digest:
+                raise CanonicalError(f"{f} ({cid}): missing or sha256 differs from the pinned package manifest")
+            blobs.append((f, z.read(name)))
+    out_dir.mkdir(parents=True)
+    for f, b in blobs:
+        dest = out_dir / f
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(b)
+    return refs
+
+
+def verify_references(package_dir: Path, set_name: str, ref_dir: Path, expected_bytes: int) -> list:
+    """Re-verify Part A's reference features every time they are used.
+
+    Expected file names, sha256 values, crop IDs and order come ONLY from the pinned chain: the package manifest
+    found in package_dir by its pinned sha256 (verify_extracted re-checks it and the inputs). For each crop, in
+    the verified order, ref_dir/<expected_file> must exist, be exactly expected_bytes long and match
+    expected_sha256. Extra files under the reference folder are refused too. Returns
+    [{idx, crop_id, file, sha256}] in verified order.
+    """
+    verified = verify_extracted(package_dir, set_name)
+    p = verified["pinned"]
+    refs = _expected_records(json.loads(_pinned_package_manifest(Path(package_dir), p).read_text()))
+    ids = [r["crop_id"] for r in verified["inputs"]]
+    if [r[0] for r in refs] != ids:
+        raise CanonicalError("reference crop_ids/order differ from the verified input order")
+    ref_dir = Path(ref_dir)
+    want = {Path(f) for _, f, _ in refs}
+    have = {f.relative_to(ref_dir) for f in ref_dir.rglob("*") if f.is_file()} if ref_dir.is_dir() else set()
+    if have - want:
+        raise CanonicalError(f"unexpected files in {ref_dir}: {sorted(map(str, have - want))[:3]}")
+    out = []
+    for i, (cid, f, digest) in enumerate(refs):
+        path = ref_dir / f
+        if not path.is_file():
+            raise CanonicalError(f"reference {f} ({cid}) is missing from {ref_dir}")
+        size = path.stat().st_size
+        if size != expected_bytes:
+            raise CanonicalError(f"reference {f} ({cid}): {size} bytes, expected exactly {expected_bytes}")
+        if sha256_file(path) != digest:
+            raise CanonicalError(f"reference {f} ({cid}): sha256 differs from the pinned package manifest")
+        out.append({"idx": i, "crop_id": cid, "file": f, "sha256": digest})
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--set", required=True, choices=sorted(SETS))
     ap.add_argument("--archive", required=True, help="Part A's zip (qualcomm-inputs.zip or qualcomm-smoke-*.zip)")
     ap.add_argument("--out-dir", required=True, help="new directory to extract the verified inputs into")
+    ap.add_argument("--references", action="store_true",
+                    help="extract ONLY Part A's reference features (expected-nchw/), each checked against the pinned "
+                         "package manifest, into a NEW directory kept apart from inputs and runtime outputs")
     args = ap.parse_args()
+    out = REPO / args.out_dir
+    if args.references:
+        try:
+            refs = extract_references(args.set, Path(args.archive), out)
+        except CanonicalError as e:
+            raise SystemExit(f"[canonical] REFUSED: {e}")
+        print(f"[canonical] {args.set}: {len(refs)} reference files verified against the pinned package manifest")
+        for cid, f, _ in refs:
+            print(f"[canonical] wrote {rel(out / f)}  sha256 {sha256_file(out / f)}  ({cid})")
+        return
     try:
-        record = extract(args.set, Path(args.archive), REPO / args.out_dir)
+        record = extract(args.set, Path(args.archive), out)
     except CanonicalError as e:
         raise SystemExit(f"[canonical] REFUSED: {e}")
-    out = REPO / args.out_dir
     print(f"[canonical] {args.set}: {len(record['inputs'])} crops verified against {record['pinned']['manifest']}")
     print(f"[canonical] archive sha256 {record['pinned']['archive_sha256']}")
     for name in ("input_list.txt", record["package_manifest"], RECORD):
