@@ -57,6 +57,7 @@ def compare(t: np.ndarray, o: np.ndarray, tol: dict) -> dict:
                 "row": i,
                 "max_abs": float(di.max()),
                 "mean_abs": float(di.mean()),
+                "rmse": float(np.sqrt(np.mean(di ** 2))),
                 "rel_l2": float(np.linalg.norm(o64[i] - t64[i]) / np.linalg.norm(t64[i])),
             }
         )

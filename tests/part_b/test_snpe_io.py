@@ -360,3 +360,13 @@ def test_real_diag_request_only_text_is_not_evidence(tmp_path):
     diag = REAL_DIAG_HEAD + "    $ snpe-net-run --runtime_order cpu : 0 us : CPU\n"
     r = _verified("", "cpu", diag=diag, tmp_path=tmp_path)
     assert r["backend_verified"] is False and r["evidence"] == []
+
+
+def test_per_crop_rmse_reported():
+    from check_onnx_parity import compare
+
+    ref = np.zeros((2, 72, 6, 6), np.float32)
+    cand = ref.copy()
+    cand[1, 0, 0, 0] = 2.0
+    r = compare(ref + 1, cand + 1, {"max_abs": 1.0, "rel_l2": 1.0})["per_crop"]
+    assert r[0]["rmse"] == 0.0 and abs(r[1]["rmse"] - 2.0 / np.sqrt(72 * 36)) < 1e-12

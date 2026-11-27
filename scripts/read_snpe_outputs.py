@@ -276,13 +276,13 @@ def _markdown(s: dict) -> str:
         "",
         "## Per crop",
         "",
-        "| idx | crop_id | reference row | max_abs | mean_abs | rel_l2 | within |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| idx | crop_id | reference row | max_abs | mean_abs (MAE) | RMSE | rel_l2 | within |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in s["per_crop"]:
         lines.append(
             f"| {r['row']} | `{r['crop_id']}` | {r['reference_row']} | {r['max_abs']:.3e} | {r['mean_abs']:.3e} "
-            f"| {r['rel_l2']:.3e} | {r['pass']} |"
+            f"| {r['rmse']:.3e} | {r['rel_l2']:.3e} | {r['pass']} |"
         )
     return "\n".join(lines) + "\n"
 
