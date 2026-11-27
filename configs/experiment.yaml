@@ -60,6 +60,12 @@ tolerances:
   host_cpu_vs_onnx_dev:
     max_abs: 1.0e-3
     rel_l2: 1.0e-4
+  # smoke check on the conversion host (x86_64 CPU), not the RB5 experiment: encoder_float.dlc on Part A's
+  # 7 frozen smoke crops vs Part A's expected-nchw features. Declared 2026-11-27 before running it.
+  host_cpu_vs_reference_smoke:
+    max_abs: 1.0e-3
+    rel_l2: 1.0e-4
+    status: proposed, pending agreement with Steven
   pose_error_change_mm: 0.1
 
 benchmark:
