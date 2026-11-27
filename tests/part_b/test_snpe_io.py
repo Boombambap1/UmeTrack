@@ -370,3 +370,64 @@ def test_per_crop_rmse_reported():
     cand[1, 0, 0, 0] = 2.0
     r = compare(ref + 1, cand + 1, {"max_abs": 1.0, "rel_l2": 1.0})["per_crop"]
     assert r[0]["rmse"] == 0.0 and abs(r[1]["rmse"] - 2.0 / np.sqrt(72 * 36)) < 1e-12
+
+
+# --- snpe-net-run always writes SNPEDiag*.log into --output_dir: tolerate ONLY those, at top level -------------
+
+def _two_results(d):
+    feats = np.random.default_rng(5).normal(size=(2, 72, 6, 6)).astype(np.float32)
+    _write_results(d, feats)
+    return feats
+
+
+def test_snpe_diag_logs_at_top_level_accepted(tmp_path):
+    from read_snpe_outputs import snpe_diag_logs
+
+    feats = _two_results(tmp_path)
+    (tmp_path / "SNPEDiag.log").write_bytes(b"diag")
+    (tmp_path / "SNPEDiag_0.log").write_bytes(b"diag")
+    got = read_outputs(tmp_path, 2, "features.raw", parse_dims("1,6,6,72"), "NHWC")
+    assert np.array_equal(got, feats)
+    assert [d["name"] for d in snpe_diag_logs(tmp_path)] == ["SNPEDiag.log", "SNPEDiag_0.log"]
+
+
+@pytest.mark.parametrize("stray", ["notes.txt", "SNPEDiag.txt", "SNPEDiag.log.bak", "xSNPEDiag.log"])
+def test_other_stray_top_level_file_still_refused(tmp_path, stray):
+    _two_results(tmp_path)
+    (tmp_path / "SNPEDiag.log").write_bytes(b"diag")
+    (tmp_path / stray).write_bytes(b"x")
+    with pytest.raises(SystemExit, match="unexpected"):
+        read_outputs(tmp_path, 2, "features.raw", parse_dims("1,6,6,72"), "NHWC")
+
+
+def test_snpe_diag_named_directory_refused(tmp_path):
+    _two_results(tmp_path)
+    (tmp_path / "SNPEDiag.log").mkdir()
+    with pytest.raises(SystemExit, match="unexpected"):
+        read_outputs(tmp_path, 2, "features.raw", parse_dims("1,6,6,72"), "NHWC")
+
+
+def test_snpe_diag_log_inside_result_dir_refused(tmp_path):
+    _two_results(tmp_path)
+    (tmp_path / "Result_0" / "SNPEDiag.log").write_bytes(b"diag")
+    with pytest.raises(SystemExit, match="expected only features.raw"):
+        read_outputs(tmp_path, 2, "features.raw", parse_dims("1,6,6,72"), "NHWC")
+
+
+def test_main_records_snpe_diag_logs(tmp_path):
+    import hashlib
+
+    (tmp_path / "out").mkdir()
+    (tmp_path / "out" / "SNPEDiag.log").write_bytes(b"diag-bytes")
+    _, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n")
+    assert s["pass"] and s["snpe_diag_logs_in_outputs_dir"] == [
+        {"name": "SNPEDiag.log", "sha256": hashlib.sha256(b"diag-bytes").hexdigest()}]
+    assert "`SNPEDiag.log` sha256" in (tmp_path / "summary" / "summary.md").read_text()
+
+
+def test_snpe_diag_name_rule_is_exact_and_case_sensitive():
+    from read_snpe_outputs import SNPE_DIAG_LOG
+
+    assert SNPE_DIAG_LOG.match("SNPEDiag.log") and SNPE_DIAG_LOG.match("SNPEDiag_0.log")
+    for bad in ("snpediag.log", "SNPEDIAG.log", "SNPEDiag.log.bak", "xSNPEDiag.log", "SNPEDiag.txt"):
+        assert not SNPE_DIAG_LOG.match(bad)

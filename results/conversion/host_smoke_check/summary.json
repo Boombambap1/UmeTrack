@@ -157,6 +157,7 @@
       "sha256": "f4ea8b7fac5dcda1e0dfa88fb663a645fc7dc160d424b95b7e0c8bfdae875543"
     }
   ],
+  "snpe_diag_logs_in_outputs_dir": [],
   "run_log": "results/raw/conversion/host_smoke/net_run.log",
   "run_log_sha256": "2952b356441002b64a531ebcca8cdb8fe1895d3a10185f44b017751131bb7b70",
   "diag_log": "results/raw/conversion/host_smoke/diag.txt",

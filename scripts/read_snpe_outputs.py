@@ -148,15 +148,34 @@ def to_nchw(arr: np.ndarray, layout: str) -> np.ndarray:
     raise ValueError(f"unknown layout {layout}")
 
 
+SNPE_DIAG_LOG = re.compile(r"^SNPEDiag[^/]*\.log$")
+
+
+def snpe_diag_logs(outputs_dir: Path) -> list:
+    """snpe-net-run's own SNPEDiag*.log files at the TOP LEVEL of the outputs dir (regular files only).
+
+    These are written by snpe-net-run into every --output_dir; they are tolerated there, never read for the
+    numeric checks, and recorded (name + sha256) in the summary. Nothing else is tolerated."""
+    if not outputs_dir.is_dir():
+        return []
+    return [
+        {"name": p.name, "sha256": sha256_file(p)}
+        for p in sorted(outputs_dir.iterdir())
+        if SNPE_DIAG_LOG.match(p.name) and p.is_file() and not p.is_symlink()
+    ]
+
+
 def read_outputs(outputs_dir: Path, n: int, output_file: str, dims, layout: str) -> np.ndarray:
     """Read Result_<i>/<output_file> for i in [0, n); return float32 [n, C, H, W].
 
     Rejects: a missing or extra Result_* directory, any other entry in the outputs dir or a Result dir,
-    and any output whose byte size is not exactly prod(dims) * 4.
+    and any output whose byte size is not exactly prod(dims) * 4. The only tolerated extra entries are
+    snpe-net-run's SNPEDiag*.log regular files at the top level (see snpe_diag_logs); they are not read here.
     """
     expected_bytes = int(np.prod(dims)) * 4
     want_dirs = {f"Result_{i}" for i in range(n)}
     have = {p.name for p in outputs_dir.iterdir()} if outputs_dir.is_dir() else set()
+    have -= {d["name"] for d in snpe_diag_logs(outputs_dir)}
     if have != want_dirs:
         raise SystemExit(
             f"{outputs_dir}: expected exactly {sorted(want_dirs)}; missing {sorted(want_dirs - have)}, "
@@ -271,6 +290,8 @@ def _markdown(s: dict) -> str:
          f"`{s['canonical']['manifest']}`); matched by crop_id in the verified order."
          if s.get("reference_files") else f"Reference: `{s['reference']}` sha256 `{s['reference_sha256']}`."),
         f"Run log: `{s['run_log']}` sha256 `{s['run_log_sha256']}`.",
+        "snpe-net-run SNPEDiag*.log in the outputs dir (tolerated, not used for numeric checks): "
+        + ("; ".join(f"`{d['name']}` sha256 `{d['sha256']}`" for d in s.get("snpe_diag_logs_in_outputs_dir") or []) or "none"),
         f"Runtime evidence (source: {b['source']}): " + ("; ".join(f"`{e}`" for e in b["evidence"][:5]) if b["evidence"] else "none"),
         "Negative lines: " + ("; ".join(f"`{e}`" for e in b["negative"][:5]) if b["negative"] else "none"),
         "",
@@ -393,6 +414,7 @@ def main():
         "reference": rel(REPO / (args.reference_raw_dir or args.reference)),
         "reference_sha256": None if ref_files else sha256_file(REPO / args.reference),
         "reference_files": ref_files,
+        "snpe_diag_logs_in_outputs_dir": snpe_diag_logs(REPO / args.outputs_dir),
         "run_log": rel(run_log),
         "run_log_sha256": sha256_file(run_log) if run_log.exists() else None,
         "diag_log": rel(diag_log) if diag_log else None,

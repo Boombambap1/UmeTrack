@@ -20,6 +20,7 @@ No PyTorch diagnostic: Part B's PyTorch features come from regenerated crops, no
 Host output: `features.raw` dims [1, 6, 6, 72] layout NHWC -> explicit transpose to NCHW [1,72,6,6]. Result_<i> matched to input_list line i, reference by crop_id.
 Reference: Part A's features `artifacts/reference/smoke-2026-11-21` (NCHW), 7 files, each sha256 verified against the pinned package manifest (sha256 `cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5`, pinned by `manifests/smoke-exchange.json`); matched by crop_id in the verified order.
 Run log: `results/raw/conversion/host_smoke/net_run.log` sha256 `2952b356441002b64a531ebcca8cdb8fe1895d3a10185f44b017751131bb7b70`.
+snpe-net-run SNPEDiag*.log in the outputs dir (tolerated, not used for numeric checks): none
 Runtime evidence (source: diag): `0: _node_Conv_102 : 2583 us : CPU`; `1: _node_relu : 638 us : CPU`; `2: _node_max_pool2d : 574 us : CPU`; `3: _node_Conv_104 : 2397 us : CPU`; `4: _node_relu_1 : 573 us : CPU`
 Negative lines: none
 
