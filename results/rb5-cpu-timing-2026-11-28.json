@@ -1,0 +1,405 @@
+{
+  "date": "2026-11-28",
+  "status": "passed_with_measurement_limitations",
+  "scope": "Dedicated instrumented RB5 CPU image-encoder timing; excludes full tracker and headset latency.",
+  "source_code_sha": "2fe815709db28b1f71fa8b05f705c1cd2c83f578",
+  "repository_state": "main at f2f0ac658278af7deb0dd528f4ddf068d7f1ee1e; PR #1 checked open/unmerged; immutable reviewed PR snapshot used. No Git mutations.",
+  "model_sha256": "d0342d35a65f9de43967ffc1d2f6bfb2356e92b80b3dacd35bf57e5bf1572f7e",
+  "runtime_version": "2.33.2.250410134701_117956",
+  "runtime_integrity": {
+    "manifest_checks_before_and_after": "passed",
+    "model_hash_check": "passed",
+    "intended_libSNPE_resolution": "verified account-owned runtime/lib/libSNPE.so",
+    "loader_evidence": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/method-evidence/capability/loader-resolution.txt",
+      "sha256": "c46e3e12a03dfc139ff914d32053780ebb2ef36a212b9278fe646f4733789cab"
+    }
+  },
+  "protocol": {
+    "batch_size": 1,
+    "unique_frozen_crops": 335,
+    "warmup_calls_excluded": 30,
+    "measured_passes": 3,
+    "samples_per_pass": 335,
+    "measured_samples": 1005,
+    "model_loads": 1,
+    "order": "30 initial crop warm-ups, then frozen crop order repeated three times; canonical input list unchanged",
+    "predeclared_protocol": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/protocol.json",
+      "sha256": "b5dcb3ea804d651af8a0b81c3d51c433f9e60f728a3b65086493ea27d7d95c18"
+    },
+    "timing_schedule": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/schedule.json",
+      "sha256": "4096ea99985721f55b34f51af4502fc066d634c3bec696d82c833d3196ba9531"
+    }
+  },
+  "timer": {
+    "tool": "snpe-diagview --output <file> --csv_format_version 2",
+    "primary_event": "TOTAL_INFERENCE_TIME",
+    "unit": "us, converted to milliseconds by division by 1000",
+    "excluded_events": [
+      "AVG_TOTAL_INFERENCE_TIME",
+      "LOAD",
+      "DESERIALIZE",
+      "CREATE",
+      "INIT",
+      "DE-INIT"
+    ],
+    "boundary": "SNPE internal total execution duration, including SDK dispatch/runtime overhead. App-level input-file reading/output-file serialization, model load/init, SSH transfer, observer snapshots and output validation are outside this timer.",
+    "input_preload": "All 335 raw files pre-read and hash-verified to warm the page cache. CLI still reads files outside SDK execution; direct preloaded ITensor buffers are not available through the selected CLI.",
+    "model_lifecycle": "One snpe-net-run process loads the model once and processes the complete 1035-entry schedule.",
+    "profiling_level": "detailed",
+    "performance_profile": "system_settings",
+    "profiling_caveat": "Detailed per-layer instrumentation adds overhead; this is instrumented SDK execution latency, not an uninstrumented kernel-only result.",
+    "sample_mapping": "Ordered CSV execution blocks matched one-to-one to the separate schedule and the observed ordered input announcements. CSV Msg Timestamp is not used as a per-call timestamp."
+  },
+  "statistics": {
+    "samples": 1005,
+    "median_ms_per_crop": 20.779,
+    "p95_ms_per_crop": 27.087799999999998,
+    "mean_ms_per_crop": 21.492569154228853,
+    "min_ms_per_crop": 18.736,
+    "max_ms_per_crop": 64.253
+  },
+  "per_pass": [
+    {
+      "pass": 1,
+      "samples": 335,
+      "median_ms_per_crop": 19.421,
+      "p95_ms_per_crop": 26.9463,
+      "mean_ms_per_crop": 20.51747462686567,
+      "min_ms_per_crop": 18.736,
+      "max_ms_per_crop": 64.253
+    },
+    {
+      "pass": 2,
+      "samples": 335,
+      "median_ms_per_crop": 19.827,
+      "p95_ms_per_crop": 26.619200000000006,
+      "mean_ms_per_crop": 21.21245671641791,
+      "min_ms_per_crop": 19.214,
+      "max_ms_per_crop": 62.874
+    },
+    {
+      "pass": 3,
+      "samples": 335,
+      "median_ms_per_crop": 21.242,
+      "p95_ms_per_crop": 30.572400000000002,
+      "mean_ms_per_crop": 22.74777611940299,
+      "min_ms_per_crop": 19.294,
+      "max_ms_per_crop": 59.108
+    }
+  ],
+  "per_pass_median_increase_first_to_third_percent": 9.376448174656304,
+  "actual_backend": {
+    "verified": true,
+    "requested": "CPU",
+    "all_69345_layer_records_cpu": true,
+    "layers_per_call": 67,
+    "fallback_or_error_evidence": false
+  },
+  "output_validation": {
+    "all_1035_calls_checked_outside_timer": true,
+    "all_three_measured_passes_checked": true,
+    "max_abs": 2.384185791015625e-06,
+    "worst_rel_l2_per_crop": 6.016658148779779e-07,
+    "mae": 4.2251427463728065e-08,
+    "rmse": 7.02274603068667e-08,
+    "max_abs_limit": 0.001,
+    "rel_l2_limit": 0.0001,
+    "pass": true,
+    "transpose": [
+      0,
+      3,
+      1,
+      2
+    ]
+  },
+  "conditions": {
+    "profiling_level": "detailed",
+    "performance_profile": "system_settings",
+    "observed_total_process_thread_counts": [
+      10
+    ],
+    "compute_worker_thread_count": "not separately determined; total process count includes main/logger/workers",
+    "observed_thread_affinity_masks": [
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    ],
+    "observed_governors": [
+      "performance"
+    ],
+    "governors_changed_by_experiment": false,
+    "thermal_observations": [
+      {
+        "label": "preflight-before-contention-sample",
+        "wall_time_ns": 1795878184088358971,
+        "observed_monotonic_ns": 305031791093444,
+        "cpu_min_celsius": 48.0,
+        "cpu_max_celsius": 50.8,
+        "cpu_sensors": 14,
+        "boundary_semantics": "Observer snapshot after the input announcement, not synchronized to SDK execute start/end."
+      },
+      {
+        "label": "preflight-after-contention-sample",
+        "wall_time_ns": 1795878185120612898,
+        "observed_monotonic_ns": 305032823348101,
+        "cpu_min_celsius": 47.3,
+        "cpu_max_celsius": 50.0,
+        "cpu_sensors": 14,
+        "boundary_semantics": "Observer snapshot after the input announcement, not synchronized to SDK execute start/end."
+      },
+      {
+        "label": "warmup-before",
+        "wall_time_ns": 1795878185946428081,
+        "observed_monotonic_ns": 305033649162971,
+        "cpu_min_celsius": 54.6,
+        "cpu_max_celsius": 60.8,
+        "cpu_sensors": 14,
+        "boundary_semantics": "Observer snapshot after the input announcement, not synchronized to SDK execute start/end."
+      },
+      {
+        "label": "warmup-after_pass1-before",
+        "wall_time_ns": 1795878185983105764,
+        "observed_monotonic_ns": 305033685841279,
+        "cpu_min_celsius": 53.9,
+        "cpu_max_celsius": 60.5,
+        "cpu_sensors": 14,
+        "boundary_semantics": "Observer snapshot after the input announcement, not synchronized to SDK execute start/end."
+      },
+      {
+        "label": "pass1-after_pass2-before",
+        "wall_time_ns": 1795878193506489963,
+        "observed_monotonic_ns": 305041209224749,
+        "cpu_min_celsius": 61.2,
+        "cpu_max_celsius": 65.9,
+        "cpu_sensors": 14,
+        "boundary_semantics": "Observer snapshot after the input announcement, not synchronized to SDK execute start/end."
+      },
+      {
+        "label": "pass2-after_pass3-before",
+        "wall_time_ns": 1795878200493870735,
+        "observed_monotonic_ns": 305048196605938,
+        "cpu_min_celsius": 64.0,
+        "cpu_max_celsius": 69.8,
+        "cpu_sensors": 14,
+        "boundary_semantics": "Observer snapshot after the input announcement, not synchronized to SDK execute start/end."
+      },
+      {
+        "label": "pass3-after_process-exit",
+        "wall_time_ns": 1795878208010755819,
+        "observed_monotonic_ns": 305055713491126,
+        "cpu_min_celsius": 62.0,
+        "cpu_max_celsius": 65.1,
+        "cpu_sensors": 14,
+        "boundary_semantics": "Observer snapshot after the input announcement, not synchronized to SDK execute start/end."
+      }
+    ],
+    "thermal_clock_raw_file": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/returned-benchmark/observer.json",
+    "preflight_machine_busy_fraction": 0.0048367593712213,
+    "contention_stop_rules_triggered": false,
+    "power_supply": "See observer.json power_supply entries."
+  },
+  "telemetry_limitations": {
+    "status": "limited; exact per-pass before/after thermal readings not established",
+    "finding": "Input announcements were delivered asynchronously/buffered. Log-triggered snapshots cannot be treated as exact execution boundaries.",
+    "evidence": {
+      "first_30_sdk_execution_duration_ms": 638.226,
+      "observer_interval_between_call_0_and_30_announcements_ms": 36.678308
+    },
+    "consequence": "Retain the readings as run-condition observations only; do not assign them precisely to pass starts/ends or infer thermal throttling causation. Independent contention polling and synchronized boundary telemetry would strengthen a future controlled comparison.",
+    "does_not_change": "Raw SDK execution durations, warm-up exclusion, ordered sample mapping, CPU evidence, and output validation."
+  },
+  "derived_serial_encoder_frame_cost": {
+    "label": "Derived sum of crop execution durations by original frame; not measured full-tracker or headset latency.",
+    "frame_instances": 300,
+    "median_ms_per_frame": 77.477,
+    "p95_ms_per_frame": 102.93190000000001
+  },
+  "mac_reference_comparison": {
+    "reference": "results/mac-encoder-batch-one.json",
+    "reference_sha256": "e31bdd4752c4e345d99631cfdf396343bf577ae101e3c628a488c6d6349a97a7",
+    "median_ms_per_crop": 3.944,
+    "p95_ms_per_crop": 4.1470836,
+    "measured_calls": 1005,
+    "additional_warmup_calls": 30,
+    "torch_threads": 2,
+    "interop_threads": 1,
+    "power": "Battery during the saved Mac run",
+    "comparison_limits": "Both time batch-one encoder execution with load/preprocessing/transfer outside the boundary. RB5 uses SNPE internal events with detailed per-layer profiling and system_settings; Mac times a PyTorch call without equivalent profiling. Hardware, runtime, thread configuration, power, buffer handling and thermal observations differ. Do not interpret this as a controlled hardware-only ratio or tracker speedup."
+  },
+  "prior_correctness": {
+    "record": "results/rb5-cpu-correctness-2026-11-28.json",
+    "paired_pose_mpjpe_change_mm": 7.37462926281296e-07,
+    "note": "Historical validated correctness run; downstream pose replay was not rerun during this timing experiment."
+  },
+  "limitations": [
+    "Detailed profiling adds instrumentation overhead.",
+    "CLI input reading and output serialization occur outside the SDK execution timer, but can affect cache/scheduling between calls; direct preloaded ITensor buffers were not available through this CLI.",
+    "Boundary telemetry is observed after input announcements; it is not synchronized to SDK call boundaries.",
+    "CSV Msg Timestamp is constant across the export block and is not used for sample ordering or thermal alignment.",
+    "Warm means after the declared 30 calls; long-duration headset thermal equilibrium was not tested.",
+    "Input announcements were delivered asynchronously/buffered. Log-triggered snapshots cannot be treated as exact execution boundaries.",
+    "No detected substantial contention under the declared sampled process-counter rules; short-lived or sub-threshold work is not ruled out.",
+    "Pass medians increased about 9.4%; these are warm-run measurements, not proof of stationary or long-duration thermally stable operation."
+  ],
+  "preservation": {
+    "reference_files_unchanged": 105,
+    "prior_correctness_result_hashes_unchanged": true,
+    "source_snapshot_unchanged": true,
+    "canonical_input_list_unchanged": true,
+    "system_packages_drivers_permissions_services_firmware_or_governors_changed": false,
+    "unrelated_processes_terminated": false,
+    "gpu_or_dsp_experiment_performed": false,
+    "external_services_updated": false,
+    "git_merge_commit_push_approval_or_branch_change_performed": false
+  },
+  "artifact_directory": "artifacts/rb5-cpu-timing-2026-11-28-53a765da",
+  "evidence": {
+    "protocol.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/protocol.json",
+      "sha256": "b5dcb3ea804d651af8a0b81c3d51c433f9e60f728a3b65086493ea27d7d95c18"
+    },
+    "schedule.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/schedule.json",
+      "sha256": "4096ea99985721f55b34f51af4502fc066d634c3bec696d82c833d3196ba9531"
+    },
+    "schedule.csv": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/schedule.csv",
+      "sha256": "55f07d24c71413e826f7ba6b599ee6802ff654a17e5ee2615a977ed72d1236ca"
+    },
+    "source-selection.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/source-selection.json",
+      "sha256": "048c81340405604721207a720d25ae0ac4f6e4927fc3fd363f37cc61a539c4fa"
+    },
+    "method-proof.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/method-proof.json",
+      "sha256": "4b060e5d989647e5b91ce7d5ad76253289a957a3a2e6552d3562d981676cd85c"
+    },
+    "method-evidence.tar.gz": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/method-evidence.tar.gz",
+      "sha256": "91c30894a1b52d687ce4b1671a6469f36a4406dbb8cdf455782ce1d4b9e78818"
+    },
+    "benchmark-evidence.tar.gz": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/benchmark-evidence.tar.gz",
+      "sha256": "d6b37511752f178faa04d95b6ec4f6eafaeed3fd1ecb685601f83c9fe9738ae8"
+    },
+    "observer.py": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/observer.py",
+      "sha256": "e1ffdf978547f6c03a4fbc2aeda58e79067bccd98c42a9d35667e4114a832bbe"
+    },
+    "execute-benchmark.sh": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/execute-benchmark.sh",
+      "sha256": "40c2f7ec477393dd2c593838484cb4b2bce16b4159670678849c2f51bd4f9b21"
+    },
+    "returned-benchmark/execution.csv": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/returned-benchmark/execution.csv",
+      "sha256": "a448ffe6c7a95d76048eb321a231a5debe70b48d80466141d69a320134f08654"
+    },
+    "returned-benchmark/command.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/returned-benchmark/command.json",
+      "sha256": "a66299476ee22a82843024f72e1ee5d9371ab57e412f2243964fc3ada7c7503d"
+    },
+    "returned-benchmark/observer.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/returned-benchmark/observer.json",
+      "sha256": "4671bee0d2ca6f46da30ec550d6169cd4c09e562fc5537093648344d4fd0c9d7"
+    },
+    "returned-benchmark/diag.txt": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/returned-benchmark/diag.txt",
+      "sha256": "1a1552fa96aac039c7ac45820d62099e70f1b9e03fc761f3ebb2b942461da885"
+    },
+    "returned-benchmark/net_run.log": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/returned-benchmark/net_run.log",
+      "sha256": "df0a6aff0aa615b4c405415919e5dd4bbe76b34066cac1441321820ba7a8f94f"
+    },
+    "returned-benchmark/output/SNPEDiag_0.log": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/returned-benchmark/output/SNPEDiag_0.log",
+      "sha256": "bf1f38a41e61b8b248e8fe85b7feba7a6caa976ac728718716725e5a9e5222c3"
+    },
+    "returned-benchmark/runtime-check-before.log": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/returned-benchmark/runtime-check-before.log",
+      "sha256": "2fa10c654531af837ca57ef2411ddb0c0a069a449c6a1c9821d2c4d210c471e4"
+    },
+    "returned-benchmark/runtime-check-after.log": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/returned-benchmark/runtime-check-after.log",
+      "sha256": "2fa10c654531af837ca57ef2411ddb0c0a069a449c6a1c9821d2c4d210c471e4"
+    },
+    "analysis/measured-samples.csv": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/analysis/measured-samples.csv",
+      "sha256": "95460eb968e9c81fdc1de0537dde3fd5dfdca8b2a244320c7376fb628a7091a2"
+    },
+    "analysis/warmup-samples.csv": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/analysis/warmup-samples.csv",
+      "sha256": "5693a8a36c2e406cd8463eefed21b3a1430641f947a2d566bbf0829d4b2efe79"
+    },
+    "analysis/all-execution-samples.csv": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/analysis/all-execution-samples.csv",
+      "sha256": "4b1d397196a1d8effe2cfb600f78d185e0ce4c7acd0a849b46da50f2e5072c1f"
+    },
+    "analysis/feature-validation.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/analysis/feature-validation.json",
+      "sha256": "9ada8c1df18104dc76a3ea3dda242344496a5f133d10252f464231d23c5a1d5c"
+    },
+    "analysis/backend.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/analysis/backend.json",
+      "sha256": "915d7f8f9a843a7fe72eff18b05a130c748398221a239d4c89f08567adaae641"
+    },
+    "analysis/diagnostic-aliases.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/analysis/diagnostic-aliases.json",
+      "sha256": "f6de14769af0b8184c38fb1fbad3afc740292eed814ec3691f02300b098b423a"
+    },
+    "analysis/derived-serial-frame-cost.csv": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/analysis/derived-serial-frame-cost.csv",
+      "sha256": "620893c34a8db847c32e13a8075bf0bc240b6edeb1980572117f1e3deb64ecb6"
+    },
+    "analysis/summary.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/analysis/summary.json",
+      "sha256": "b5c686d3f90856ae7bcf465e9ea417359382ccfc135fa0c6adacf35c2e91fafd"
+    },
+    "analysis/telemetry-limitations.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/analysis/telemetry-limitations.json",
+      "sha256": "8a18592583441af6824e5a5ab0753dfeed2e3a260c3525da0d53176c1bda891e"
+    },
+    "method-evidence/capability/loader-resolution.txt": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/method-evidence/capability/loader-resolution.txt",
+      "sha256": "c46e3e12a03dfc139ff914d32053780ebb2ef36a212b9278fe646f4733789cab"
+    },
+    "method-evidence/capability/runner.ldd.txt": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/method-evidence/capability/runner.ldd.txt",
+      "sha256": "1ff039a650ff79de7b946eba7678776e76ebc07a9eefc178a34a2a69fee58c17"
+    },
+    "method-evidence/capability/runner.help.txt": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/method-evidence/capability/runner.help.txt",
+      "sha256": "9ab760a797c20c68b5a52ff4dabe72907076f1c5f3402d4ede6ed7f1d4013e72"
+    },
+    "method-evidence/capability/diagview.help.txt": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/method-evidence/capability/diagview.help.txt",
+      "sha256": "582771bd478cff4da2521bbc52f3e038b58da59c79e186c7eea7ca39e57f7874"
+    },
+    "prior-results-sha256.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/prior-results-sha256.json",
+      "sha256": "d6881bdf95e97383318d4873b264ca290207ce8adc551268933744d4f1ad874a"
+    },
+    "reference-before.json": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/reference-before.json",
+      "sha256": "78e82005f8fa4786cb3670448158189c24413216759d2e3c849ff818c5791952"
+    },
+    "umetrack_timing_analyze_20261128.py": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/umetrack_timing_analyze_20261128.py",
+      "sha256": "41f7998b3a3d7019fa01077c934a305595d6f66e503dd880861bc2e67e5dc31b"
+    },
+    "umetrack_timing_finalize_20261128.py": {
+      "path": "artifacts/rb5-cpu-timing-2026-11-28-53a765da/umetrack_timing_finalize_20261128.py",
+      "sha256": "236179580af5ef7dcf548cdf708f83163d6158c1871620b3235851d0d8db08ea"
+    }
+  },
+  "next_step": "GPU readiness only: inspect accessible OpenCL/vendor libraries and matching SNPE GPU dependencies; investigate the historical validator RuntimeCheck SIGSEGV (exit 139) with Vincent. Once readiness is established, separately authorize/perform float GPU correctness before timing; reject fallback and record actual precision. No GPU/DSP test was performed in this experiment."
+}

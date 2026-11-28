@@ -1,0 +1,288 @@
+{
+  "date": "2026-11-28",
+  "status": "blocked_at_gpu_readiness",
+  "scope": "Read-only RB5 GPU dependency inspection and one bounded OpenCL platform-count probe. Conditional seven-crop float smoke test not started.",
+  "source": {
+    "repository_head": "f2f0ac658278af7deb0dd528f4ddf068d7f1ee1e",
+    "experiment_code_sha": "2fe815709db28b1f71fa8b05f705c1cd2c83f578",
+    "immutable_snapshot": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/code-snapshot",
+    "pr_url": "https://github.com/Boombambap1/UmeTrack/pull/1",
+    "live_pr_state": "open/unmerged, head unchanged at 2fe815709db28b1f71fa8b05f705c1cd2c83f578",
+    "code_changed": false
+  },
+  "verified_preflight": {
+    "runtime_build": "2.33.2.250410134701_117956",
+    "model_sha256": "d0342d35a65f9de43967ffc1d2f6bfb2356e92b80b3dacd35bf57e5bf1572f7e",
+    "runtime_archive_sha256": "eea77d92ff7dd2eef2a4f240c60566b58bc7b165653e7fbbf0341c84545f39f1",
+    "runtime_manifest_sha256": "a1a8cac7eaf33cb31b854a81167ca629b764bc54278ce3bc9976b8e694fa030b",
+    "runtime_manifest_and_files_verified_before_and_after": true,
+    "model_hash_verified": true,
+    "frozen_seven_crop_inputs_verified": true,
+    "intended_account_owned_libSNPE_resolution": true,
+    "runner_and_validator_shared_library_dependencies_resolved": true,
+    "execution_account": "existing unprivileged benchmark account"
+  },
+  "observations": {
+    "opencl_loader": {
+      "path": "/usr/lib/libOpenCL.so.1.0.0",
+      "sha256": "dc02608e8c2cc3206780be6e0ea2d29ea1ea2fbd8689a9c94d225d29e3598002",
+      "owner_package": "ocl-icd 2.3.5-1",
+      "loader_dependencies_resolved": true
+    },
+    "opencl_vendor_directories": {
+      "/etc/OpenCL/vendors": {
+        "exists": false,
+        "readable": false,
+        "entries": []
+      },
+      "/usr/share/OpenCL/vendors": {
+        "exists": false,
+        "readable": false,
+        "entries": []
+      },
+      "/usr/local/etc/OpenCL/vendors": {
+        "exists": false,
+        "readable": false,
+        "entries": []
+      }
+    },
+    "opencl_environment_overrides": {
+      "OCL_ICD_VENDORS": null,
+      "OCL_ICD_FILENAMES": null,
+      "OPENCL_VENDOR_PATH": null,
+      "RUSTICL_ENABLE": null
+    },
+    "opencl_mesa_and_rusticl_named_packages": "pacman reports opencl-mesa and opencl-rusticl-mesa not installed; this is not an instruction to install them or proof of SNPE compatibility.",
+    "clinfo": "not installed/found; not required because the bounded API probe was used",
+    "render_node": {
+      "path": "/dev/dri/renderD128",
+      "readable": true,
+      "writable": true,
+      "sysfs_driver": "/sys/bus/platform/drivers/msm_dpu",
+      "interpretation": "Access to this node alone does not demonstrate an Adreno compute device; its observed device driver resolves to msm_dpu (display subsystem)."
+    },
+    "primary_card_node": "/dev/dri/card0 not readable/writable by the benchmark account; no permission changes attempted. This alone is not established as the blocker.",
+    "bounded_library_inventory": {
+      "roots": [
+        "/usr/lib",
+        "/usr/local/lib",
+        "/opt",
+        "/vendor/lib",
+        "/vendor/lib64",
+        "/system/lib",
+        "/system/lib64"
+      ],
+      "max_depth": 4,
+      "errors": [],
+      "qualcomm_libOpenCL_pixel_found": false,
+      "not_global_absence_claim": true
+    }
+  },
+  "bounded_probe": {
+    "api": "clGetPlatformIDs(0, NULL, &count)",
+    "attempts": 1,
+    "timeout_seconds": 15,
+    "exit_code": 0,
+    "opencl_return_code": -1001,
+    "opencl_return_name": "CL_PLATFORM_NOT_FOUND_KHR",
+    "platform_count": 0,
+    "library": "libOpenCL.so.1",
+    "device_context_or_kernel_created": false,
+    "interpretation": "No usable OpenCL platform is exposed through the existing loader/environment to this account. Successful probe-process exit does not imply successful GPU readiness."
+  },
+  "gpu_readiness": {
+    "pass": false,
+    "blocker": "The existing account/runtime environment exposes an OpenCL ICD loader but no OpenCL platform. A compatible GPU implementation and functioning platform/device path are not established.",
+    "snpe_validator_execution_attempted": false,
+    "reason_validator_not_repeated": "Stop at the confirmed platform infrastructure blocker; avoid repeating the historical crashing validator.",
+    "historical_validator": {
+      "date": "2026-11-21",
+      "exit_code": 139,
+      "stage": "RuntimeCheck",
+      "cause_established": false,
+      "source": "results/rb5-readiness.json"
+    },
+    "actual_gpu_backend_verified": false,
+    "mixed_execution_observed": false,
+    "note": "No model execution occurred, so no GPU/fallback/mixed-backend result exists."
+  },
+  "seven_crop_smoke": {
+    "status": "not_run_readiness_gate_failed",
+    "model_calls": 0,
+    "numeric_pass": null,
+    "actual_backend": null,
+    "actual_precision": null,
+    "declared_limits": {
+      "max_abs_lte": 0.001,
+      "rel_l2_per_crop_lte": 0.0001
+    },
+    "declared_decode": "float32 NHWC [1,6,6,72] -> NCHW [1,72,6,6], transpose (0,3,1,2)",
+    "planned_gpu_selection": "--runtime_order gpu, without --enable_cpu_fallback; not executed",
+    "installed_help_mode_description": "gpu maps to float32 math / float16 storage hybrid. This is the planned/requested mode only; actual GPU arithmetic was not observed."
+  },
+  "next_actions": [
+    {
+      "proposed_owner": "Vincent, board infrastructure",
+      "action": "Provide or identify a working GPU OpenCL implementation compatible with the current Arch board kernel/image and GPU device path. Demonstrate nonzero platform count and an accessible GPU device under the same unprivileged account. Verify the compute driver/device binding; do not assume the observed display render node proves compute readiness.",
+      "acceptance": "Nonzero OpenCL platform enumeration plus an identified GPU device, implementation/version and device access; any required system/image changes require separate authorization."
+    },
+    {
+      "proposed_owner": "Ali, SDK/runtime handoff",
+      "action": "Confirm which GPU dependencies are required by the same QAIRT/SNPE build on the selected board image; provide missing user-readable artifacts with hashes if needed. CPU DLC conversion is already validated and does not need to be repeated merely because platform enumeration failed.",
+      "acceptance": "Version-matched runtime provenance and demonstrated board/image OpenCL compatibility, without treating a loader-only or Mesa installation as sufficient."
+    },
+    {
+      "proposed_owner": "Steven, Part A",
+      "action": "After infrastructure readiness is restored, perform one bounded SNPE GPU validator/probe, then the frozen seven-crop float correctness check with per-layer actual-runtime evidence and the existing thresholds.",
+      "acceptance": "All seven crops pass and pure GPU execution is positively verified; mixed/fallback execution is labelled and does not count as a pure GPU pass."
+    },
+    {
+      "proposed_owner": "Steven, subsequent stage",
+      "action": "Only after the smoke gate passes, run all 335 canonical crops and paired downstream pose replay; keep any later GPU timing experiment separate.",
+      "acceptance": "Complete identity/layout/feature checks, actual backend evidence and paired pose/coverage comparison; no latency claim from correctness execution."
+    }
+  ],
+  "limits": [
+    "The inventory was bounded to accessible standard locations; it is not proof that no usable library exists anywhere on the board.",
+    "Zero platforms does not prove the GPU hardware is unsupported or identify the cause of the historical validator SIGSEGV.",
+    "A compatible OpenCL platform may require more than an additional SDK file. Do not copy arbitrary Android/vendor binaries or install guessed packages.",
+    "No model-specific GPU operator compatibility, accuracy, precision or latency result was obtained."
+  ],
+  "preservation": {
+    "original_reference_files_unchanged": 105,
+    "prior_cpu_results_unchanged": true,
+    "immutable_code_snapshot_unchanged": true,
+    "previous_experiments_preserved": true,
+    "gpu_model_or_dsp_experiment_performed": false,
+    "snpe_validator_runtime_test_performed": false,
+    "system_packages_permissions_drivers_services_firmware_governors_or_board_image_changed": false,
+    "other_users_jobs_terminated": false,
+    "external_services_updated": false,
+    "git_merge_approve_commit_push_branch_switch_or_discard_performed": false
+  },
+  "artifact_directory": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f",
+  "evidence": [
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection-evidence.tar.gz",
+      "sha256": "5812e629f133b5c0fb1e843434e126d1a352d3c3d17b54b449ab9fd7045d1710"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/platform-probe-evidence.tar.gz",
+      "sha256": "2c21419b322a786f30f19c33c7cb5ea6085ea498d88653492e580b548fa114e6"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/inventory.json",
+      "sha256": "87d3aa40867312c0b40e91d16f496a8d8e75fbff9052bc93b84e6a07e8a42ad9"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/model-check.log",
+      "sha256": "f2943928e85912e5a1bc2fad64594801cb5a44cc981bfae0e971f4d3ef3c85ad"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/manifest-check.log",
+      "sha256": "d17af2738f2fb4a87eb25d914d07834c5558a6bdff57b69be07717e4233418c7"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/runtime-check.log",
+      "sha256": "2fa10c654531af837ca57ef2411ddb0c0a069a449c6a1c9821d2c4d210c471e4"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/smoke-inputs-check.log",
+      "sha256": "8a7378ada8ac1b0d39ea8822937f8303bed43ea9549f2247bdf1406f8701a70e"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/runner.version.txt",
+      "sha256": "e7892139e3689e3b88b0d109b7cbb21cbc613fee4c7112c6ea9aced90849c7cd"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/loader-resolution.txt",
+      "sha256": "c46e3e12a03dfc139ff914d32053780ebb2ef36a212b9278fe646f4733789cab"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/runner.ldd.txt",
+      "sha256": "0231fd1cc39b7011354b5d82d6b1aba86881ff5b8c3759640287a42523e3a4a0"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/validator.ldd.txt",
+      "sha256": "aa1cce3291e9e753c5f520d5131bdbce32cacf8d30079d9a584eeaf4e5fe0c38"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/validator-shared.ldd.txt",
+      "sha256": "a4e90d9bdc7089ca9bafa6adf875b59154bf270f75f0c41c3509785a3220344e"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/runner.help.txt",
+      "sha256": "9ab760a797c20c68b5a52ff4dabe72907076f1c5f3402d4ede6ed7f1d4013e72"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspection/validator.help.txt",
+      "sha256": "f81f56e073a85cb554c994425906ea3bd566064cac347693941f721fe2232bf7"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/platform-probe/configuration.json",
+      "sha256": "1cd58cc42c079be895998db24daa3bc5a364f607d0e66fa5f274998f9cd404ac"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/platform-probe/probe.py",
+      "sha256": "70108a1b70305ba8da0169276b0436da5239fcc679603125eb2a18423a85e9ab"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/platform-probe/probe.json",
+      "sha256": "36a1f81ea5ec38f6f5599f5c892f41bdb065c08a484cb0913ba6965ac38b2773"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/platform-probe/probe.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/platform-probe/probe.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/platform-probe/runtime-check-after.log",
+      "sha256": "2fa10c654531af837ca57ef2411ddb0c0a069a449c6a1c9821d2c4d210c471e4"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/inspect-board.sh",
+      "sha256": "f1469c739a5b006ec508c9c3f4f02e953ee51f8ac10a83727b749a75b7562707"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/platform-probe.sh",
+      "sha256": "cacd5b383bd4697895cc6aaaaead987e8b3d1a7d9badead61889215b34736fb0"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/source-selection.json",
+      "sha256": "62504a392529dd1fa945a89c9972438eee40901b16793a393561ffb155d8392e"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/prior-results-sha256.json",
+      "sha256": "50b6619c6a79d80a33210684df20304be641422aa20e6da49ed1c25c58f24813"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/reference-before.json",
+      "sha256": "78e82005f8fa4786cb3670448158189c24413216759d2e3c849ff818c5791952"
+    },
+    {
+      "path": "artifacts/rb5-gpu-readiness-2026-11-28-f7147f6f/documentation-sources.json",
+      "sha256": "0b0cee016814805a15a5869b78d1f5fc8bf458f67e759d912e59884cdf1a8663"
+    }
+  ],
+  "documentation_sources": [
+    {
+      "url": "https://registry.khronos.org/OpenCL/specs/unified/refpages/man/html/clGetPlatformIDs.html",
+      "supports": "CL_PLATFORM_NOT_FOUND_KHR means zero OpenCL platforms available through the queried loader."
+    },
+    {
+      "url": "https://github.com/KhronosGroup/OpenCL-Headers/blob/main/CL/cl_ext.h",
+      "supports": "CL_PLATFORM_NOT_FOUND_KHR is -1001."
+    },
+    {
+      "url": "https://docs.qualcomm.com/bundle/publicresource/topics/80-63442-10/linux_setup.html",
+      "supports": "SNPE GPU backend uses OpenCL; its library must be accessible to the runtime loader. Current online guidance, not proof of this older build/image compatibility."
+    },
+    {
+      "url": "https://docs.qualcomm.com/bundle/publicresource/topics/80-70015-15B/snpe-run-model.html",
+      "supports": "SNPE float GPU model deployment selects GPU using --use_gpu; installed 2.33.2 tool help remains the authority for local command syntax."
+    }
+  ]
+}
