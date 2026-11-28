@@ -1,0 +1,227 @@
+{
+  "date": "2026-11-28",
+  "status": "passed",
+  "scope": "Actual RB5 CPU image-encoder correctness experiment; downstream tracker replay runs on the Mac. No latency benchmark or GPU/DSP execution.",
+  "source": {
+    "repository_head_unchanged": "f2f0ac658278af7deb0dd528f4ddf068d7f1ee1e",
+    "experiment_code_sha": "2fe815709db28b1f71fa8b05f705c1cd2c83f578",
+    "pr_url": "https://github.com/Boombambap1/UmeTrack/pull/1",
+    "pr_state_at_start": "open, unmerged",
+    "snapshot_method": "git archive of base plus every PR changed file verified against Git blob SHA; no Git checkout or merge",
+    "snapshot_manifest": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/source-snapshot.json",
+    "upstream_commit": "e263ec0844abf73457468a050a75853444d33d69",
+    "checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d"
+  },
+  "model": {
+    "name": "encoder_float.dlc",
+    "sha256": "d0342d35a65f9de43967ffc1d2f6bfb2356e92b80b3dacd35bf57e5bf1572f7e",
+    "bytes": 15145523,
+    "input_layout": "NHWC [1,96,96,1]",
+    "output_layout": "NHWC [1,6,6,72]",
+    "canonical_output_layout": "NCHW [1,72,6,6]",
+    "output_to_canonical_transpose": [
+      0,
+      3,
+      1,
+      2
+    ],
+    "raw_output_bytes_per_crop": 10368
+  },
+  "preflight": {
+    "pass": true,
+    "board": "RB5 ver03",
+    "os": "Arch Linux ARM",
+    "architecture": "aarch64",
+    "glibc": "2.43",
+    "execution_account": "documented unprivileged benchmark account",
+    "runtime_build": "2.33.2.250410134701_117956",
+    "runtime_archive_sha256": "eea77d92ff7dd2eef2a4f240c60566b58bc7b165653e7fbbf0341c84545f39f1",
+    "target_hashes_and_manifest_verified": true,
+    "loader_resolution_verified": "canonical path to the account-owned runtime libSNPE.so; bin/../lib alias resolves to the same file",
+    "board_runtime_prerequisites_present": true
+  },
+  "criteria": {
+    "feature_max_abs_lte": 0.001,
+    "feature_rel_l2_per_crop_lte": 0.0001,
+    "feature_limits_apply_to_every_crop": true,
+    "reference": "Part A frozen Mac PyTorch encoder features",
+    "pose_abs_mpjpe_change_mm_lt": 0.1,
+    "required_cpu_layers": 67,
+    "diagnostics_only": [
+      "MAE",
+      "RMSE",
+      "direct joint displacement"
+    ]
+  },
+  "smoke": {
+    "crops": 7,
+    "pass": true,
+    "max_abs": 1.430511474609375e-06,
+    "worst_rel_l2_per_crop": 4.266708836631227e-07,
+    "mae": 4.194495266658261e-08,
+    "rmse": 6.636721721199552e-08,
+    "all_crop_limits_pass": true,
+    "backend_verified": true,
+    "cpu_layer_records": 67
+  },
+  "formal": {
+    "crops": 335,
+    "pass": true,
+    "max_abs": 2.384185791015625e-06,
+    "worst_rel_l2_per_crop": 6.016658148779779e-07,
+    "mae": 4.227630779735484e-08,
+    "rmse": 7.032189004521006e-08,
+    "all_crop_limits_pass": true,
+    "backend_verified": true,
+    "cpu_layer_records": 67,
+    "frames": 100,
+    "clips": 2,
+    "valid_hand_frame_instances": 200,
+    "package_sha256": "7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8",
+    "input_list_sha256": "2802575e76f6c8aee26d619866b345df3f44f3086ab3830e5c8a01caece9fb74"
+  },
+  "pose": {
+    "execution_kind": "board",
+    "tracked_hand_frames": 200,
+    "reference_mpjpe_mm": 8.961397993859494,
+    "imported_mpjpe_mm": 8.961397256396568,
+    "absolute_mpjpe_change_mm": 7.37462926281296e-07,
+    "mean_joint_displacement_mm": 5.6431770650824604e-05,
+    "p95_joint_displacement_mm": 0.0001078993028827564,
+    "max_joint_displacement_mm": 0.00017925018500474136,
+    "masks_and_ground_truth_match": true,
+    "backend_verified": true,
+    "note": "Actual board execution independently verified from 67 CPU layer records; generic replay helper does not itself verify runtime logs."
+  },
+  "backend_evidence": {
+    "smoke_and_formal_exit_codes": 0,
+    "smoke_and_formal_diagview_exit_codes": 0,
+    "each_run_has_all_67_ordered_cpu_layer_records": true,
+    "fallback_or_error_evidence": false,
+    "verification": "Explicit CPU request plus independently reviewed SNPE diagnostic records; not inferred from requested flags."
+  },
+  "timing": {
+    "benchmark_performed": false,
+    "median_ms_per_crop": null,
+    "p95_ms_per_crop": null,
+    "note": "SDK averaged diagnostic execution statistics and process timestamps are correctness-run evidence only, not a median latency result."
+  },
+  "adaptations": [
+    "Board has no unzip: original ZIP hashes were verified, and identical raw inputs/list/pinned manifests were transferred in additional hash-verified tar archives; per-file checks passed before and after inference.",
+    "Literal loader-path preflight check was corrected to canonicalize bin/../lib; no runtime or system files changed.",
+    "Raw runtime creates the contained diagnostic alias SNPEDiag.log -> SNPEDiag_0.log. Original archives and symlinks were preserved; only this exact known alias was materialized in byte-identical analysis copies so the pinned strict reader could consume them. Other links/special files are refused.",
+    "Local unpacking-directory handling was corrected without repeating the seven-crop inference."
+  ],
+  "preservation": {
+    "reference_files_unchanged": 105,
+    "source_snapshot_unchanged": true,
+    "previous_experiments_preserved": true,
+    "system_packages_drivers_permissions_services_or_firmware_changed": false,
+    "only_new_account_owned_board_experiment_directories_created": true,
+    "git_approval_merge_commit_push_or_branch_change_performed": false
+  },
+  "replay_helper_note": "The generic imported-formal/replay-summary.json sets backend_verified false and contains fixture wording because it does not inspect runtime logs. The verified backend status reported here is established separately by analysis/formal/backend.json and all 67 actual CPU layer records; original helper output is preserved.",
+  "evidence": [
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/local-preflight.json",
+      "sha256": "beae49203f083b22d2cc1bd43d0435a5ed4a15d018ff7d3795d1331bfec071b9"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/source-snapshot.json",
+      "sha256": "41c8883fe1b63abe1418e087467027ece21a673308c8186a7fded0c21f440904"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/progress.json",
+      "sha256": "d93512171b3fde7e90c4f0f61a7f4fa3470956b9b3207f0ace76fc9068e0b4e9"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/reference-before.json",
+      "sha256": "78e82005f8fa4786cb3670448158189c24413216759d2e3c849ff818c5791952"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/mac-replay-environment.json",
+      "sha256": "0d0d73008891a3d3e7ce4e15f3d8b895d0fb90c758d252d9c3f8a4b01f0afafd"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/analysis/smoke/feature-comparison.json",
+      "sha256": "1e740f4fe9d6e8dfbc6eff00a6f277d34a01403130fde80b6cf1f442df124e38"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/analysis/smoke/backend.json",
+      "sha256": "5bb8837a543516f5869bc433f10fa84c5bc6431f922cdbebe1e21087889ad0f4"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/analysis/smoke/diagnostic-aliases.json",
+      "sha256": "a8cf457059ce1884846ec18a5574e07e12febc26644d779c715d5ac2230f7628"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/analysis/formal/feature-comparison.json",
+      "sha256": "30510de0049a2e717ce7bc005709c4bdbb8f9b00ea47b97d4d19cc3abfb1de5d"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/analysis/formal/backend.json",
+      "sha256": "29fc84b23c5f48a8bb96ba8e71d68b43bea3e228c4f1cbbbe020abc9728a87ca"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/analysis/formal/diagnostic-aliases.json",
+      "sha256": "8363e7e47b4a1e4135f38496c406d1242d1af8ecf18a5de81431b85ad3a64ae8"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/imported-formal/summary.json",
+      "sha256": "6383c5fb7b33fd83866887d47cdc5a69235424e079b3787ae6e9759af4f6b81a"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/imported-formal/replay-summary.json",
+      "sha256": "e9668f9456e8ee825364ce01b4b1222e41654b5a1b8f9fe3de9415d412d68d05"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/formal-import-return/execution.json",
+      "sha256": "0afdeace148e187966dc6c50ffea6144546b6ba640a800818fd58d1fef0e130e"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/preflight-evidence.tar.gz",
+      "sha256": "7e8b971b0c3eb05a65fce606ba083181854c6dfe0bc44aaea5689e5a42bc797a"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/return-smoke.tar.gz",
+      "sha256": "d1726692bf770c6e2e4199413fb39ae455661eec4cc9f113591ddf07bb4fd125"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/return-formal.tar.gz",
+      "sha256": "f5a9d098a76bc8185ea781ed3421630b017d417ffd0a0775cabc36bc1f079fb5"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/returned/smoke-raw/net_run.log",
+      "sha256": "2952b356441002b64a531ebcca8cdb8fe1895d3a10185f44b017751131bb7b70"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/returned/smoke-raw/diag.txt",
+      "sha256": "d70cbec711a90c746537457cc1c45764f4895bf84eef9096794b7752df1b29cb"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/returned/formal/net_run.log",
+      "sha256": "ebeb4783bfaa9f2daf3775b329ad69f1f64a728b7d5971c7999ad46c79f809e5"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/returned/formal/diag.txt",
+      "sha256": "c5eab3d670fd04c98f2880473e92a5099f829efb5512e6433ac4914624fda31a"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/driver.py",
+      "sha256": "e0c68578368f9b4dfcc438e99d786e19f521d6866f7132cf33531d945fd1ac9b"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/driver-formal-continuation.py",
+      "sha256": "a4ff2ba68b9fde0d07241187de8ad2c1e80e8f54bcda8d5d1950045326517ee5"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/prepare.py",
+      "sha256": "c65e838b61a26ed2e2d28102f6cb3f1014a008d19bb8e332bc0e01d5244002b0"
+    },
+    {
+      "path": "artifacts/rb5-cpu-correctness-2026-11-28-61515952/validate.py",
+      "sha256": "01e8fa9abb42e616f973267d448b2ea3a03f045a274142c37bcb35d0f24832d5"
+    }
+  ],
+  "next_stage": "Separate warm CPU inference timing experiment; then GPU readiness and float experiment. DSP work remains independent."
+}
