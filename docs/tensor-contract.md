@@ -109,7 +109,7 @@ string drops the real/synthetic and split parts of the path, so keep the `record
 ## Numerical tolerances
 
 Declared in `configs/experiment.yaml` (`tolerances`) before each comparison and never loosened to make a result
-pass. Names are `max_abs` and `rel_l2`, never atol/rtol.
+pass. The measures are `max_abs` (elementwise, over the crop) and `rel_l2` per crop; atol/rtol are not used.
 `rel_l2 = ||candidate − reference|| / ||reference||`, computed per crop.
 
 ### RB5 CPU acceptance criteria (agreed with Steven 2026-11-28)
@@ -134,8 +134,10 @@ pass. Names are `max_abs` and `rel_l2`, never atol/rtol.
 | Development check on the conversion host (x86_64, Part B dev crops) | `host_cpu_vs_onnx_dev` | 1.0e-3 | 1.0e-4 | declared before the run |
 | Smoke check on the conversion host (x86_64 CPU) vs Part A's reference | `host_cpu_vs_reference_smoke` | 1.0e-3 | 1.0e-4 | proposed, pending agreement with Steven |
 
-Part A's conversion template has fields named for atol/rtol; Part B fills them with the `max_abs` and `rel_l2`
-values above, and reports MAE and RMSE as diagnostics. DSP/INT8 allowances are not yet proposed. The ORT INT8
+Part A's conversion template has `declared_atol` / `declared_rtol` fields. They are left `null` ("not used; see
+max_abs and rel_l2_per_crop"): an elementwise rtol is not the same measure as per-crop `rel_l2`. The handoff
+record states the criteria explicitly as `max_abs` and `rel_l2_per_crop` with the reference identity, and
+reports MAE and RMSE as diagnostics only. DSP/INT8 allowances are not yet proposed. The ORT INT8
 preview (`results/int8_preview/summary.md`) is characterisation only, not SNPE/DSP and not pass/fail.
 
 Measured so far: ONNX vs PyTorch on the 60-crop development set, worst max_abs 3.695e-6 and worst per-crop
