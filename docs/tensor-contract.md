@@ -108,19 +108,35 @@ string drops the real/synthetic and split parts of the path, so keep the `record
 
 ## Numerical tolerances
 
-**Proposed, pending agreement** between Part A and Part B (`configs/experiment.yaml`, `tolerances`). They must
-be agreed before any formal comparison and are never loosened to make a result pass.
+Declared in `configs/experiment.yaml` (`tolerances`) before each comparison and never loosened to make a result
+pass. Names are `max_abs` and `rel_l2`, never atol/rtol.
+`rel_l2 = ||candidate − reference|| / ||reference||`, computed per crop.
 
-| Comparison | max_abs | rel_l2 per crop | Other |
+### RB5 CPU acceptance criteria (agreed with Steven 2026-11-28)
+
+| Criterion | Key | Limit | Applies to |
 | --- | --- | --- | --- |
-| ONNX vs PyTorch | 1.0e-4 | 1.0e-5 | |
-| Board float (CPU/GPU) vs ONNX | 1.0e-3 | 1.0e-4 | |
-| Pose error change vs the paired Mac subset | | | absolute MPJPE change < 0.1 mm against 8.961398 mm |
+| Encoder features, RB5 CPU vs reference | `tolerances.rb5_cpu_vs_reference` | max_abs ≤ 1.0e-3 and rel_l2 ≤ 1.0e-4 | every crop |
+| Pose | `tolerances.rb5_cpu_pose` | absolute MPJPE change < 0.1 mm vs the paired 8.961398 mm reference | the paired 100-frame subset |
 
-`rel_l2 = ||candidate − reference|| / ||reference||`. Part A's conversion template also asks for atol/rtol,
-MAE, RMSE and max absolute error; Part B's summaries report max_abs, mean_abs (MAE), RMSE and rel_l2, so both
-can be filled. DSP/INT8 allowances are not yet proposed; the ORT INT8 preview
-(`results/int8_preview/summary.md`) is characterisation only, not SNPE/DSP and not pass/fail.
+- **Reference:** Part A's frozen reference features, produced by the Mac PyTorch encoder (checkpoint
+  `72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d`). The formal package is sha256
+  `7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8`; the smoke manifest is sha256
+  `cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5`.
+- **Diagnostics only (never pass/fail):** MAE (`mean_abs`), RMSE and direct joint displacement.
+
+### Other comparisons
+
+| Comparison | Key | max_abs | rel_l2 per crop | Status |
+| --- | --- | --- | --- | --- |
+| ONNX vs PyTorch | `onnx_vs_torch` | 1.0e-4 | 1.0e-5 | proposed |
+| Board float (CPU/GPU) vs ONNX | `board_cpu_vs_onnx` | 1.0e-3 | 1.0e-4 | proposed |
+| Development check on the conversion host (x86_64, Part B dev crops) | `host_cpu_vs_onnx_dev` | 1.0e-3 | 1.0e-4 | declared before the run |
+| Smoke check on the conversion host (x86_64 CPU) vs Part A's reference | `host_cpu_vs_reference_smoke` | 1.0e-3 | 1.0e-4 | proposed, pending agreement with Steven |
+
+Part A's conversion template has fields named for atol/rtol; Part B fills them with the `max_abs` and `rel_l2`
+values above, and reports MAE and RMSE as diagnostics. DSP/INT8 allowances are not yet proposed. The ORT INT8
+preview (`results/int8_preview/summary.md`) is characterisation only, not SNPE/DSP and not pass/fail.
 
 Measured so far: ONNX vs PyTorch on the 60-crop development set, worst max_abs 3.695e-6 and worst per-crop
 rel_l2 9.078e-7 (`results/onnx_parity/summary.md`). Conversion-host checks (x86_64, not the board) are in

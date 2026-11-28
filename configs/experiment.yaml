@@ -47,7 +47,7 @@ data:
   recordings_dir: data/
   first_recording: raw_data/real/separate_hand/testing/user_19/recording_00
 
-# proposed, agree with Steven before formal comparison; never loosen to pass
+# never loosen to pass. Keys are proposed unless their status says agreed (rb5_cpu_* agreed 2026-11-28).
 tolerances:
   onnx_vs_torch:
     max_abs: 1.0e-4
@@ -66,6 +66,22 @@ tolerances:
     max_abs: 1.0e-3
     rel_l2: 1.0e-4
     status: proposed, pending agreement with Steven
+  # RB5 CPU acceptance criteria (agreed with Steven 2026-11-28, on PR review), declared before any RB5 run.
+  # Reference: Part A's frozen reference features (formal package sha256 7eab946c..., smoke manifest
+  # cc0f5ca7...), produced by the Mac PyTorch encoder, checkpoint 72eab0ea...
+  # Both limits apply to EVERY crop. MAE, RMSE and direct joint displacement are diagnostics only.
+  rb5_cpu_vs_reference:
+    max_abs: 1.0e-3
+    rel_l2: 1.0e-4
+    applies_to: every crop
+    reference: "Part A frozen reference features: package sha256 7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8, smoke manifest sha256 cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5; Mac PyTorch encoder, checkpoint 72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d"
+    diagnostics_only: [mean_abs, rmse]
+    status: agreed with Steven 2026-11-28
+  rb5_cpu_pose:
+    abs_mpjpe_change_mm_lt: 0.1
+    paired_reference_mpjpe_mm: 8.961398
+    diagnostics_only: [direct_joint_displacement]
+    status: agreed with Steven 2026-11-28
   pose_error_change_mm: 0.1
 
 benchmark:
