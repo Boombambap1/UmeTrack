@@ -255,3 +255,149 @@ def test_verified_ids_come_from_pinned_package_order(formal_set, tmp_path):
     got = verify_extracted(out, "formal")
     assert [r["crop_id"] for r in got["inputs"]] == [c["crop_id"] for c in crops]
     assert [r["input_file"] for r in got["inputs"]] == [c["input_file"] for c in crops]
+
+
+# --- Part A's reference features (--reference-raw-dir): pinned by the same chain as the inputs ---------------
+
+REF_BYTES = 72 * 6 * 6 * 4
+
+
+def make_smoke_package(tmp, n=3):
+    """Synthetic archive in Part A's smoke schema (inputs + expected-nchw), plus a smoke-exchange-style pin."""
+    rng = np.random.default_rng(3)
+    files, crops, feats = {}, [], []
+    for i in range(n):
+        x = rng.random((1, 96, 96, 1), dtype=np.float32).astype("<f4").tobytes()
+        y = rng.normal(size=(1, 72, 6, 6)).astype("<f4")
+        feats.append(y)
+        cid = f"user_19-recording_00:000000:hand{i % 2}:camera{i}"
+        inp, exp = f"inputs/crop-{i:05d}.raw", f"expected-nchw/crop-{i:05d}.raw"
+        files[inp], files[exp] = x, y.tobytes()
+        crops.append({"index": i, "crop_id": cid, "input_file": inp, "input_sha256": sha(x),
+                      "expected_file": exp, "expected_sha256": sha(y.tobytes())})
+    input_list = "".join(c["input_file"] + "\n" for c in crops).encode()
+    pkg = {"schema_version": 1, "expected_layout": "NCHW", "expected_dtype": "<f4",
+           "input_list_sha256": sha(input_list), "crops": crops}
+    pkg_bytes = (json.dumps(pkg, indent=2) + "\n").encode()
+    archive = tmp / "smoke.zip"
+    with zipfile.ZipFile(archive, "w") as z:
+        z.writestr("input_list.txt", input_list)
+        z.writestr("manifest.json", pkg_bytes)
+        for name, b in files.items():
+            z.writestr(name, b)
+    pin = tmp / "smoke-exchange.json"
+    pin.write_text(json.dumps({
+        "crops": n, "archive_sha256": sha(archive.read_bytes()), "archive_bytes": archive.stat().st_size,
+        "manifest_sha256": sha(pkg_bytes), "input_list_sha256": sha(input_list),
+        "crop_ids": [c["crop_id"] for c in crops],
+    }))
+    return archive, pin, crops, np.concatenate(feats)
+
+
+@pytest.fixture
+def smoke_set(monkeypatch, tmp_path):
+    archive, pin, crops, feats = make_smoke_package(tmp_path)
+    monkeypatch.setitem(canonical_crops.SETS, "smoke", {"manifest": str(pin), "crops": len(crops)})
+    extract("smoke", archive, tmp_path / "pkg")
+    canonical_crops.extract_references("smoke", archive, tmp_path / "refs")
+    return tmp_path / "pkg", tmp_path / "refs", crops, feats
+
+
+def test_references_verify_in_pinned_order(smoke_set):
+    pkg, refs, crops, _ = smoke_set
+    got = canonical_crops.verify_references(pkg, "smoke", refs, REF_BYTES)
+    assert [r["crop_id"] for r in got] == [c["crop_id"] for c in crops]
+    assert [r["sha256"] for r in got] == [c["expected_sha256"] for c in crops]
+    assert not (refs / "inputs").exists() and not (pkg / "expected-nchw").exists()  # kept apart
+
+
+def test_altered_reference_refused(smoke_set):
+    pkg, refs, _, _ = smoke_set
+    f = refs / "expected-nchw" / "crop-00001.raw"
+    b = bytearray(f.read_bytes())
+    b[100] ^= 0x01  # one bit, same size
+    f.write_bytes(bytes(b))
+    with pytest.raises(CanonicalError, match="crop-00001.raw.*sha256 differs"):
+        canonical_crops.verify_references(pkg, "smoke", refs, REF_BYTES)
+
+
+def test_missing_reference_refused(smoke_set):
+    pkg, refs, _, _ = smoke_set
+    (refs / "expected-nchw" / "crop-00002.raw").unlink()
+    with pytest.raises(CanonicalError, match="crop-00002.raw.*missing"):
+        canonical_crops.verify_references(pkg, "smoke", refs, REF_BYTES)
+
+
+def test_wrong_size_reference_refused(smoke_set):
+    pkg, refs, _, _ = smoke_set
+    f = refs / "expected-nchw" / "crop-00000.raw"
+    f.write_bytes(f.read_bytes() + b"\x00\x00\x00\x00")
+    with pytest.raises(CanonicalError, match="crop-00000.raw.*10372 bytes, expected exactly 10368"):
+        canonical_crops.verify_references(pkg, "smoke", refs, REF_BYTES)
+
+
+def test_extra_reference_file_refused(smoke_set):
+    pkg, refs, _, _ = smoke_set
+    (refs / "expected-nchw" / "crop-00099.raw").write_bytes(b"\x00" * REF_BYTES)
+    with pytest.raises(CanonicalError, match="unexpected files"):
+        canonical_crops.verify_references(pkg, "smoke", refs, REF_BYTES)
+
+
+def test_formal_schema_without_expected_files_refused(formal_set, tmp_path):
+    archive, _ = formal_set()
+    with pytest.raises(CanonicalError, match="no pinned reference features"):
+        canonical_crops.extract_references("formal", archive, tmp_path / "refs")
+
+
+def _smoke_reader(monkeypatch, tmp_path, pkg, refs, feats, extra=()):
+    import read_snpe_outputs
+
+    _write_results(tmp_path / "res", feats)
+    (tmp_path / "diag.txt").write_text("".join(f"    {i}: _node_Conv_{i} : 10 us : CPU\n" for i in range(3)))
+    (tmp_path / "log.txt").write_text("Successfully executed graph encoder_float\n")
+    monkeypatch.setattr(sys, "argv", [
+        "r", "--outputs-dir", str(tmp_path / "res"), "--output-dims", "1,6,6,72", "--output-layout", "NHWC",
+        "--purpose", "smoke", "--canonical-inputs", str(pkg), "--reference-raw-dir", str(refs),
+        "--target", "conversion-host", "--tolerance-key", "host_cpu_vs_reference_smoke",
+        "--run-log", str(tmp_path / "log.txt"), "--diag-log", str(tmp_path / "diag.txt"),
+        "--out-dir", str(tmp_path / "summary"), "--features-out", str(tmp_path / "runtime.npy"), *extra,
+    ])
+    with pytest.raises(SystemExit) as e:
+        read_snpe_outputs.main()
+    return e.value
+
+
+def test_reader_smoke_against_part_a_references(smoke_set, monkeypatch, tmp_path):
+    pkg, refs, crops, feats = smoke_set
+    err = _smoke_reader(monkeypatch, tmp_path, pkg, refs, feats)
+    s = json.loads((tmp_path / "summary" / "summary.json").read_text())
+    md = (tmp_path / "summary" / "summary.md").read_text()
+    assert err.code == 0 and s["pass"] and s["overall"]["max_abs"] == 0.0 and s["vs_torch"] is None
+    assert [r["crop_id"] for r in s["per_crop"]] == [c["crop_id"] for c in crops]
+    assert s["tolerances"]["status"].startswith("proposed")
+    assert md.splitlines()[0].startswith("# Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment")
+    assert "Development check" not in md and "RB5 vs ONNX" not in md
+
+
+def test_reader_refuses_altered_reference(smoke_set, monkeypatch, tmp_path):
+    pkg, refs, _, feats = smoke_set
+    f = refs / "expected-nchw" / "crop-00001.raw"
+    f.write_bytes(b"\x00" * REF_BYTES)  # same size, different values
+    err = _smoke_reader(monkeypatch, tmp_path, pkg, refs, feats)
+    assert "refusing reference features" in str(err.code) and "crop-00001.raw" in str(err.code)
+    assert not (tmp_path / "summary").exists()
+
+
+def test_reader_reference_raw_dir_refused_for_dev(monkeypatch, tmp_path):
+    err = _run_reader(monkeypatch, tmp_path, ["--reference-raw-dir", str(tmp_path)])
+    assert "requires --purpose formal|smoke" in str(err.code)
+
+
+REAL_SMOKE = REPO / "artifacts" / "qualcomm-smoke-2026-11-21.zip"
+
+
+@pytest.mark.skipif(not REAL_SMOKE.exists(), reason="Part A's smoke archive is not on this machine")
+def test_real_smoke_archive_references_pinned(tmp_path):
+    refs = canonical_crops.extract_references("smoke", REAL_SMOKE, tmp_path / "refs")
+    assert [r[0] for r in refs] == pinned("smoke")["crop_ids"]
+    assert all((tmp_path / "refs" / f).stat().st_size == REF_BYTES for _, f, _ in refs)

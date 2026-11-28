@@ -1,0 +1,155 @@
+{
+  "status": "float DLC converted on the conversion host; smoke check on the conversion host (x86_64 CPU) passed on Steven's seven frozen crops; CPU runtime package and setup doc ready; RB5 CPU run (Steven's) pending",
+  "lane": "Part B float encoder delivery",
+  "source": {
+    "upstream_commit": "e263ec0844abf73457468a050a75853444d33d69",
+    "checkpoint_sha256": "72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d"
+  },
+  "conversion_host": {
+    "os": "Ubuntu 22.04.5 LTS",
+    "architecture": "x86_64",
+    "details": "docs/env_conversion_host.md (connection details kept out of Git)"
+  },
+  "sdk": {
+    "conversion_release_build": "QAIRT 2.33.2.250410 (build 250410134701_117956)",
+    "converter_version_output": "DLC created with converter version: 2.33.2.250410134701_117956",
+    "observed_board_runner_version": "2.33.2.250410134701_117956",
+    "intended_runtime_release_build": "2.33.2.250410134701_117956 (same as observed board runner; no change)",
+    "sdk_zip_sha256": "37487de4d9dd770f15826224bc915d138417eb44445ebe6bd8718b6ca172d617"
+  },
+  "export": {
+    "helper_path": "scripts/export_encoder.py",
+    "helper_sha256": "9fa0cb0c3ace7f629894414173bfadb77c749b3962f9735884361d356dfe06c0",
+    "onnx_path": "artifacts/encoder.onnx",
+    "onnx_sha256": "1e86586510d928febb2db643caaef6e13fc48e4e5dd236424422cd89f34fa483",
+    "opset": 17,
+    "command": ".venv/bin/python scripts/export_encoder.py (defaults; metadata in results/export/export_meta.json; re-export is byte-identical)"
+  },
+  "float_dlc": {
+    "artifact_location": "Shared privately with Steven via Google Drive (link sent directly; verify sha256 d0342d35a65f9de43967ffc1d2f6bfb2356e92b80b3dacd35bf57e5bf1572f7e)",
+    "sha256": "d0342d35a65f9de43967ffc1d2f6bfb2356e92b80b3dacd35bf57e5bf1572f7e",
+    "bytes": 15145523,
+    "conversion_command": "snpe-onnx-to-dlc -i model/encoder.onnx --input_dim crops 1,1,96,96 --input_layout crops NCHW --out_name features --float_bitwidth 32 --model_version umetrack-encoder-onnx-1e865865 -o conversion/encoder_float.dlc",
+    "conversion_exit_status": 0,
+    "model_version": "umetrack-encoder-onnx-1e865865",
+    "warnings_verbatim": [
+      "WARNING_OP_VERSION_NOT_SUPPORTED: Operation Relu Not Supported. Expected operator version: [1, 6], instead got version: [14]  (x25, once per Relu)",
+      "Onnx model simplification failed due to: No module named 'onnxsim'",
+      "Simplified model validation failed",
+      "--model_version option is deprecated, use --set_model_version."
+    ],
+    "dry_run_verbatim": [
+      "Relu: unsupported version  (every Relu)",
+      "MaxPool: unsupported version | storage_order: unsupported in Converter",
+      "NameError: name 'sys' is not defined  (onnx_loader.py line 376, sys.exit(0); SDK bug, dry run exit 1)"
+    ],
+    "warnings_explanation": "Dry-run table is the legacy checker (LATEST_SUPPORTED_ONNX_VERSION = 11). MaxPool-12 is registered by the converter and storage_order is 0 (default). Relu-14 is not registered ([1, 6]); the conversion path only warns and uses its Relu translation; Relu-13/14 only added data types, float32 Relu is max(x, 0). onnxsim is not in the SDK's tested list, so optional simplification was skipped. Numerical evidence: development check and smoke check on the conversion host below; RB5 CPU run still required."
+  },
+  "io": {
+    "batch_size": 1,
+    "input": {
+      "name": "crops",
+      "layout": "NHWC",
+      "shape": [
+        1,
+        96,
+        96,
+        1
+      ],
+      "dtype": "float32",
+      "preprocessing": "already applied (uint8 / 255); no encoding in DLC"
+    },
+    "output": {
+      "name": "features",
+      "layout": "NHWC",
+      "shape": [
+        1,
+        6,
+        6,
+        72
+      ],
+      "dtype": "float32",
+      "raw_output_filename": "features.raw",
+      "to_canonical": "transpose (0, 3, 1, 2) -> NCHW [1, 72, 6, 6]"
+    }
+  },
+  "real_crop_validation": {
+    "note": "Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment: Steven's seven frozen smoke crops vs Steven's expected-nchw reference features. Host runtime only; says nothing about RB5 CPU accuracy or timing. The RB5 CPU run is Steven's.",
+    "source_manifest_sha256": "cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5",
+    "source_manifest_note": "archive-internal manifest.json, pinned by manifests/smoke-exchange.json; archive artifacts/qualcomm-smoke-2026-11-21.zip sha256 fcbcad10e9b53795451506380734bc9f8ba6f883df725230e9c0b4e52eafbdac (151,000 bytes); every input and reference file verified against its sha256 in that manifest",
+    "declared_atol": null,
+    "declared_atol_note": "not used; see max_abs and rel_l2_per_crop",
+    "declared_rtol": null,
+    "declared_rtol_note": "not used; see max_abs and rel_l2_per_crop (rel_l2 is not an elementwise rtol)",
+    "max_abs": {
+      "limit": 0.001,
+      "applies_to": "every crop",
+      "measured_worst": 1.073e-06
+    },
+    "rel_l2_per_crop": {
+      "limit": 0.0001,
+      "applies_to": "every crop",
+      "definition": "||candidate - reference|| / ||reference||, per crop",
+      "measured_worst": 4.223e-07
+    },
+    "reference_identity": "Part A frozen reference features (Mac PyTorch encoder, checkpoint 72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d): formal package sha256 7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8; smoke manifest sha256 cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5",
+    "rb5_criteria": "tolerances.rb5_cpu_vs_reference: max_abs 1e-3 and rel_l2 1e-4 on every crop, agreed with Steven 2026-11-28; pose tolerances.rb5_cpu_pose: absolute MPJPE change < 0.1 mm vs 8.961398 mm. MAE, RMSE and direct joint displacement are diagnostics only.",
+    "declared_tolerances_in_config": "tolerances.host_cpu_vs_reference_smoke (this host check): max_abs 1e-3, per-crop rel_l2 1e-4; declared and committed before the run; same limits as the agreed rb5_cpu_vs_reference",
+    "runtime": "x86_64-linux-clang snpe-net-run, --runtime_order cpu --profiling_level detailed, exit 0; QAIRT 2.33.2.250410134701_117956",
+    "layout_mapping": "host output NHWC [1,6,6,72] -> transpose (0,3,1,2) -> NCHW; reference read as NCHW (pinned expected_layout)",
+    "feature_mae": 4.189e-08,
+    "feature_rmse": 6.442e-08,
+    "feature_max_absolute_error": 1.073e-06,
+    "worst_crop_rel_l2": 4.223e-07,
+    "overall_rel_l2": 3.006e-07,
+    "numeric_match": true,
+    "backend_verified": true,
+    "backend_note": "requested CPU; all 67 snpe-diagview per-layer lines report CPU; no fallback/unavailable/error lines",
+    "layout_check": "reading outputs as NCHW (wrong) gives max_abs 2.027, rel_l2 1.285; only NHWC -> NCHW matches",
+    "result": "PASS on the conversion host (smoke check, x86_64 CPU); RB5 CPU run on Steven's crops still pending (Steven's)",
+    "summary": "results/conversion/host_smoke_check/summary.md (per-crop table)"
+  },
+  "development_check_on_conversion_host": {
+    "label": "development check on the conversion host - not the RB5 experiment, not Steven's frozen crops",
+    "runtime": "x86_64-linux-clang snpe-net-run, --runtime_order cpu, exit 0",
+    "crops": "8 of Part B's 60 development crops (rows 0, 8, 17, 25, 34, 42, 51, 59), manifests/crops_d6_host_dev_roundtrip.csv",
+    "declared_tolerances": "tolerances.host_cpu_vs_onnx_dev: max_abs 1e-3, per-crop rel_l2 1e-4 (declared before the run)",
+    "feature_max_absolute_error": 2.265e-06,
+    "worst_crop_rel_l2": 6.919e-07,
+    "overall_rel_l2": 3.869e-07,
+    "feature_mae": 4.324e-08,
+    "feature_rmse": 8.309e-08,
+    "numeric_match": true,
+    "backend_verified": true,
+    "backend_note": "requested CPU; all 67 snpe-diagview per-layer lines report CPU; no fallback/unavailable/error lines. First run was False as measured (parser did not match the real format '0: _node_Conv_102 : 1919 us : CPU'); parser updated to that format (safety rules kept) and re-run. Format confirmed on the conversion host's x86_64 log; re-confirm on the first RB5 log.",
+    "layout_check": "reading outputs as NCHW (wrong) gives max_abs 1.890, rel_l2 1.281; only NHWC -> NCHW matches",
+    "summary": "results/conversion/host_dev_check/summary.md"
+  },
+  "target_setup": {
+    "instructions_location": "docs/rb5_cpu_runtime_setup.md",
+    "runtime_artifact_hashes_location": "docs/rb5_cpu_runtime_setup.md (per-file table) and MANIFEST.sha256 inside the package",
+    "intended_execution_user": "Steven's benchmark account on the RB5 (unpacked in a folder it owns)",
+    "runtime_package": {
+      "name": "snpe-2.33.2-aarch64-oe-cpu-runtime.tar.gz",
+      "sha256": "eea77d92ff7dd2eef2a4f240c60566b58bc7b165653e7fbbf0341c84545f39f1",
+      "bytes": 19797559,
+      "manifest_sha256": "a1a8cac7eaf33cb31b854a81167ca629b764bc54278ce3bc9976b8e694fa030b",
+      "build": "QAIRT/SNPE 2.33.2.250410, build 250410134701_117956",
+      "target": "aarch64-oe-linux-gcc11.2, CPU only (no DSP/GPU/HTP libraries)",
+      "matches_board_staged_runtime": "snpe-net-run, snpe-platform-validator, libSNPE.so, libPlatformValidatorShared.so byte-identical to results/rb5-readiness.json",
+      "board_prerequisites": "libatomic.so.1, libstdc++.so.6, libgcc_s.so.1, libm.so.6, libc.so.6 (GLIBC >= 2.34)",
+      "location": "Shared privately with Steven via Google Drive (link sent directly; verify sha256 eea77d92...f39f1)"
+    },
+    "rb5_execution": "pending (Steven's)"
+  },
+  "evidence": [
+    "results/conversion/summary.md",
+    "docs/env_conversion_host.md",
+    "docs/rb5_cpu_runtime_setup.md",
+    "docs/tensor-contract.md#converted-float-dlc-part-b-d6",
+    "results/conversion/host_dev_check/summary.json",
+    "results/conversion/host_smoke_check/summary.json",
+    "raw logs: ignored results/raw/conversion/ (hashes in summary.md)"
+  ],
+  "note": "No null field is evidence of completion. This checklist does not replace the execution.json required for returned board outputs. Keep secrets and SDK/model binaries outside Git."
+}

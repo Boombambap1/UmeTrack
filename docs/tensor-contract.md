@@ -37,11 +37,31 @@ Merged from Part B's former `docs/tensor_contract.md`. Values come from `results
 | Exporter | `torch.onnx.export(..., dynamo=True)`; torch 2.15.0, onnxscript 0.7.2, onnx 1.23.2 |
 | Input tensor | `crops`, float32, `[1, 1, 96, 96]`, NCHW, fixed batch 1 |
 | Output tensor | `features`, float32, `[1, 72, 6, 6]`, NCHW |
-| Opset / IR version | opset 17 (default domain only), IR version 10. The dynamo exporter builds at opset 18 and down-converts. QAIRT 2.33.2's converter targets onnx 1.16.1 (IR ≤ 10, opset ≤ 21), so no compatibility copy is needed; `snpe-onnx-to-dlc` acceptance is still to be confirmed on the conversion host. |
+| Opset / IR version | opset 17 (default domain only), IR version 10. The dynamo exporter builds at opset 18 and down-converts. QAIRT 2.33.2's converter targets onnx 1.16.1 (IR ≤ 10, opset ≤ 21), so no compatibility copy is needed; `snpe-onnx-to-dlc` accepted it on 2026-11-26 (see "Converted float DLC"). |
 | Graph | `Add`, `Conv`, `MaxPool`, `Relu`; 67 nodes, no local functions. Eval-mode BatchNorm (28 layers) is folded into Conv by the exporter. |
 
-The tensor names above are the ONNX names. The DLC's names, shapes and layouts must be read from
-`snpe-dlc-info` after conversion and recorded here; they are not assumed to match.
+The tensor names above are the ONNX names. The DLC's names, shapes and layouts below are read from
+`snpe-dlc-info`, not assumed.
+
+## Converted float DLC (Part B, D6)
+
+Converted 2026-11-26 on the conversion host; details, verbatim warnings and raw-log hashes in
+`results/conversion/summary.md`, environment in `docs/env_conversion_host.md`, handoff checklist in
+`results/conversion/handoff.json`.
+
+| Item | Value |
+| --- | --- |
+| File | `encoder_float.dlc` (not in Git), 15,145,523 bytes, sha256 `d0342d35a65f9de43967ffc1d2f6bfb2356e92b80b3dacd35bf57e5bf1572f7e` |
+| Converter / SDK | `snpe-onnx-to-dlc`, QAIRT 2.33.2.250410; "DLC created with converter version: 2.33.2.250410134701_117956" (matches the RB5 runner observed Nov 21) |
+| Source | ONNX sha256 `1e86586510d928febb2db643caaef6e13fc48e4e5dd236424422cd89f34fa483`; checkpoint sha256 `72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d`; upstream `e263ec0844abf73457468a050a75853444d33d69` |
+| Arguments | `--input_dim crops 1,1,96,96 --input_layout crops NCHW --out_name features --float_bitwidth 32 --model_version umetrack-encoder-onnx-1e865865` |
+| Input tensor | `crops`, Float_32, `[1, 96, 96, 1]`, **NHWC**, fixed batch 1, no encoding (already uint8/255) |
+| Output tensor | `features`, Float_32, `[1, 6, 6, 72]`, **NHWC**; raw file `Result_<i>/features.raw`, 10,368 bytes |
+| Layout transform | The converter reorders to spatial-last (`perform_axes_to_spatial_first_order=True`). Input: NHWC bytes equal NCHW for C = 1. Output: transpose NHWC `[1,6,6,72]` -> NCHW `[1,72,6,6]` explicitly (`(0, 3, 1, 2)`). |
+| Operator warnings | 25 x `WARNING_OP_VERSION_NOT_SUPPORTED: Operation Relu Not Supported. Expected operator version: [1, 6], instead got version: [14]`; onnxsim absent so simplification skipped; dry-run legacy checker flags Relu/MaxPool and crashes (SDK bug). Explained in the summary. |
+| Development check on the conversion host | x86_64 `snpe-net-run` CPU, 8 Part B dev crops, NHWC -> NCHW: max_abs 2.265e-06, worst crop rel_l2 6.919e-07 (limit 1e-3 / 1e-4); backend_verified True from per-layer diag (all 67 CPU). Wrong-layout read: max_abs 1.89, so the mapping is confirmed. Not the RB5 experiment. |
+| Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment | Steven's 7 frozen smoke crops vs his `expected-nchw` features (each verified against the pinned manifest), NHWC -> NCHW: max_abs 1.073e-06, worst crop rel_l2 4.223e-07 (limit 1e-3 / 1e-4, `tolerances.host_cpu_vs_reference_smoke`, proposed); backend_verified True (all 67 CPU). Wrong-layout read: max_abs 2.03. |
+| Pending | RB5 CPU run on Steven's canonical crops (Steven's). |
 
 ## Board raw files and layout
 
@@ -88,19 +108,38 @@ string drops the real/synthetic and split parts of the path, so keep the `record
 
 ## Numerical tolerances
 
-**Proposed, pending agreement** between Part A and Part B (`configs/experiment.yaml`, `tolerances`). They must
-be agreed before any formal comparison and are never loosened to make a result pass.
+Declared in `configs/experiment.yaml` (`tolerances`) before each comparison and never loosened to make a result
+pass. The measures are `max_abs` (elementwise, over the crop) and `rel_l2` per crop; atol/rtol are not used.
+`rel_l2 = ||candidate − reference|| / ||reference||`, computed per crop.
 
-| Comparison | max_abs | rel_l2 per crop | Other |
+### RB5 CPU acceptance criteria (agreed with Steven 2026-11-28)
+
+| Criterion | Key | Limit | Applies to |
 | --- | --- | --- | --- |
-| ONNX vs PyTorch | 1.0e-4 | 1.0e-5 | |
-| Board float (CPU/GPU) vs ONNX | 1.0e-3 | 1.0e-4 | |
-| Pose error change vs the paired Mac subset | | | absolute MPJPE change < 0.1 mm against 8.961398 mm |
+| Encoder features, RB5 CPU vs reference | `tolerances.rb5_cpu_vs_reference` | max_abs ≤ 1.0e-3 and rel_l2 ≤ 1.0e-4 | every crop |
+| Pose | `tolerances.rb5_cpu_pose` | absolute MPJPE change < 0.1 mm vs the paired 8.961398 mm reference | the paired 100-frame subset |
 
-`rel_l2 = ||candidate − reference|| / ||reference||`. Part A's conversion template also asks for atol/rtol,
-MAE, RMSE and max absolute error; Part B's summaries report max_abs, mean_abs (MAE), RMSE and rel_l2, so both
-can be filled. DSP/INT8 allowances are not yet proposed; the ORT INT8 preview
-(`results/int8_preview/summary.md`) is characterisation only, not SNPE/DSP and not pass/fail.
+- **Reference:** Part A's frozen reference features, produced by the Mac PyTorch encoder (checkpoint
+  `72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d`). The formal package is sha256
+  `7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8`; the smoke manifest is sha256
+  `cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5`.
+- **Diagnostics only (never pass/fail):** MAE (`mean_abs`), RMSE and direct joint displacement.
+
+### Other comparisons
+
+| Comparison | Key | max_abs | rel_l2 per crop | Status |
+| --- | --- | --- | --- | --- |
+| ONNX vs PyTorch | `onnx_vs_torch` | 1.0e-4 | 1.0e-5 | proposed |
+| Board float (CPU/GPU) vs ONNX | `board_cpu_vs_onnx` | 1.0e-3 | 1.0e-4 | proposed |
+| Development check on the conversion host (x86_64, Part B dev crops) | `host_cpu_vs_onnx_dev` | 1.0e-3 | 1.0e-4 | declared before the run |
+| Smoke check on the conversion host (x86_64 CPU) vs Part A's reference | `host_cpu_vs_reference_smoke` | 1.0e-3 | 1.0e-4 | proposed, pending agreement with Steven |
+
+Part A's conversion template has `declared_atol` / `declared_rtol` fields. They are left `null` ("not used; see
+max_abs and rel_l2_per_crop"): an elementwise rtol is not the same measure as per-crop `rel_l2`. The handoff
+record states the criteria explicitly as `max_abs` and `rel_l2_per_crop` with the reference identity, and
+reports MAE and RMSE as diagnostics only. DSP/INT8 allowances are not yet proposed. The ORT INT8
+preview (`results/int8_preview/summary.md`) is characterisation only, not SNPE/DSP and not pass/fail.
 
 Measured so far: ONNX vs PyTorch on the 60-crop development set, worst max_abs 3.695e-6 and worst per-crop
-rel_l2 9.078e-7 (`results/onnx_parity/summary.md`). No board result exists yet.
+rel_l2 9.078e-7 (`results/onnx_parity/summary.md`). Conversion-host checks (x86_64, not the board) are in
+"Converted float DLC" above. No board result exists yet.

@@ -164,7 +164,7 @@ def test_parse_runtime():
     assert backend_check(None, "cpu")["backend_verified"] is False
 
 
-def _synthetic_run(tmp_path, log_text=None, requested="cpu"):
+def _synthetic_run(tmp_path, log_text=None, requested="cpu", extra=()):
     """Full read_snpe_outputs.main() on synthetic data that matches the reference exactly."""
     import csv as _csv
 
@@ -196,7 +196,7 @@ def _synthetic_run(tmp_path, log_text=None, requested="cpu"):
         "--roundtrip-manifest", str(tmp_path / "rt.csv"), "--reference-manifest", str(tmp_path / "ref.csv"),
         "--reference", str(tmp_path / "ref.npy"), "--torch-reference", str(tmp_path / "ref.npy"),
         "--requested-runtime", requested, "--run-log", str(log), "--out-dir", str(tmp_path / "summary"),
-        "--features-out", str(tmp_path / "board.npy"),
+        "--features-out", str(tmp_path / "board.npy"), *extra,
     ]
     old = sys.argv
     sys.argv = argv
@@ -207,7 +207,8 @@ def _synthetic_run(tmp_path, log_text=None, requested="cpu"):
         sys.argv = old
     import json as _json
 
-    return e.value.code, _json.loads((tmp_path / "summary" / "summary.json").read_text())
+    summary = tmp_path / "summary" / "summary.json"
+    return e.value.code, (_json.loads(summary.read_text()) if summary.exists() else None)
 
 
 def test_main_no_log_is_not_verified(tmp_path):
@@ -230,6 +231,27 @@ def test_main_both_verdicts_true_passes(tmp_path):
     code, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n")
     assert s["numeric_match"] and s["backend_verified"] and s["pass"] and code == 0
     assert [r["crop_id"].split(":")[1] for r in s["per_crop"]] == ["000002", "000000", "000001"]
+
+
+def test_main_default_target_is_rb5_and_reports_rmse(tmp_path):
+    _, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n")
+    md = (tmp_path / "summary" / "summary.md").read_text()
+    assert s["target"] == "rb5" and s["tolerance_key"] == "board_cpu_vs_onnx" and s["overall"]["rmse"] == 0.0
+    assert md.startswith("# D6 — RB5 vs ONNX") and "RMSE" in md
+
+
+def test_main_conversion_host_target_is_labelled_development_check(tmp_path):
+    _, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n",
+                          extra=["--target", "conversion-host", "--tolerance-key", "host_cpu_vs_onnx_dev"])
+    md = (tmp_path / "summary" / "summary.md").read_text()
+    assert s["target"] == "conversion-host" and s["tolerance_key"] == "host_cpu_vs_onnx_dev"
+    assert "Development check on the conversion host" in md.splitlines()[0]
+    assert "not the RB5 experiment" in md and "RB5 vs ONNX" not in md and "development only" in md
+
+
+def test_main_undeclared_tolerance_key_refused(tmp_path):
+    code, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n", extra=["--tolerance-key", "made_up_key"])
+    assert s is None and "tolerances.made_up_key is not declared" in str(code)
 
 
 # --- Steven's re-check of ec34f61: runtime evidence must show what EXECUTED -----------------------
@@ -288,3 +310,124 @@ def test_diag_mixed_layers_not_verified(tmp_path):
     diag = "Layer 0 (conv1) Runtime: DSP\nLayer 1 (relu1) Runtime: CPU\n"
     r = _verified("Runtime: DSP\n", "dsp", diag=diag, tmp_path=tmp_path)
     assert r["backend_verified"] is False
+
+
+# --- Real snpe-diagview per-layer format (first real log: conversion host x86_64, QAIRT 2.33.2) -------
+# Lines copied from results/raw/conversion/host_dev/diag.txt; re-confirm on the first RB5 log.
+REAL_DIAG_HEAD = (
+    "Software library version: 2.33.2.250410134701_117956\n"
+    "SNPE Execute Statistics (Averaged):\n"
+    "----------------------------------------\n"
+    "  Total Inference Time: 36222 us\n"
+    "  Per-Subnet Execution Times: \n"
+    "  ------------------------------\n"
+    "    Subnet 0 (CPU) : 36137 us\n"
+    "  Per-Layer Execution Times: \n"
+    "  ------------------------------\n"
+)
+REAL_DIAG_LAYERS = [
+    "    0: _node_Conv_102 : 1919 us : CPU",
+    "    1: _node_relu : 293 us : CPU",
+    "    2: _node_max_pool2d : 355 us : CPU",
+    "    65: _node_relu_24 : 206 us : CPU",
+    "    66: _node_conv2d_28 : 112 us : CPU",
+]
+
+
+def _real_diag(layers):
+    return REAL_DIAG_HEAD + "\n".join(layers) + "\n"
+
+
+def test_real_diag_all_cpu_verified(tmp_path):
+    r = _verified("Successfully executed graph encoder_float\n", "cpu", diag=_real_diag(REAL_DIAG_LAYERS), tmp_path=tmp_path)
+    assert r["backend_verified"] is True and r["actual_runtime"] == "CPU" and r["source"] == "diag"
+    assert len(r["evidence"]) == len(REAL_DIAG_LAYERS)
+
+
+def test_real_diag_one_gpu_layer_when_cpu_requested_not_verified(tmp_path):
+    layers = REAL_DIAG_LAYERS[:2] + ["    2: _node_max_pool2d : 355 us : GPU"] + REAL_DIAG_LAYERS[3:]
+    r = _verified("Successfully executed graph encoder_float\n", "cpu", diag=_real_diag(layers), tmp_path=tmp_path)
+    assert r["backend_verified"] is False and r["reason"] == "diag layers name different runtimes"
+
+
+def test_real_diag_with_fallback_line_not_verified(tmp_path):
+    diag = _real_diag(REAL_DIAG_LAYERS) + "  GPU runtime unavailable, falling back to CPU\n"
+    r = _verified("Successfully executed graph encoder_float\n", "cpu", diag=diag, tmp_path=tmp_path)
+    assert r["backend_verified"] is False and r["actual_runtime"] == "CPU" and "fallback" in r["reason"]
+
+
+def test_real_diag_request_only_text_is_not_evidence(tmp_path):
+    diag = REAL_DIAG_HEAD + "    $ snpe-net-run --runtime_order cpu : 0 us : CPU\n"
+    r = _verified("", "cpu", diag=diag, tmp_path=tmp_path)
+    assert r["backend_verified"] is False and r["evidence"] == []
+
+
+def test_per_crop_rmse_reported():
+    from check_onnx_parity import compare
+
+    ref = np.zeros((2, 72, 6, 6), np.float32)
+    cand = ref.copy()
+    cand[1, 0, 0, 0] = 2.0
+    r = compare(ref + 1, cand + 1, {"max_abs": 1.0, "rel_l2": 1.0})["per_crop"]
+    assert r[0]["rmse"] == 0.0 and abs(r[1]["rmse"] - 2.0 / np.sqrt(72 * 36)) < 1e-12
+
+
+# --- snpe-net-run always writes SNPEDiag*.log into --output_dir: tolerate ONLY those, at top level -------------
+
+def _two_results(d):
+    feats = np.random.default_rng(5).normal(size=(2, 72, 6, 6)).astype(np.float32)
+    _write_results(d, feats)
+    return feats
+
+
+def test_snpe_diag_logs_at_top_level_accepted(tmp_path):
+    from read_snpe_outputs import snpe_diag_logs
+
+    feats = _two_results(tmp_path)
+    (tmp_path / "SNPEDiag.log").write_bytes(b"diag")
+    (tmp_path / "SNPEDiag_0.log").write_bytes(b"diag")
+    got = read_outputs(tmp_path, 2, "features.raw", parse_dims("1,6,6,72"), "NHWC")
+    assert np.array_equal(got, feats)
+    assert [d["name"] for d in snpe_diag_logs(tmp_path)] == ["SNPEDiag.log", "SNPEDiag_0.log"]
+
+
+@pytest.mark.parametrize("stray", ["notes.txt", "SNPEDiag.txt", "SNPEDiag.log.bak", "xSNPEDiag.log"])
+def test_other_stray_top_level_file_still_refused(tmp_path, stray):
+    _two_results(tmp_path)
+    (tmp_path / "SNPEDiag.log").write_bytes(b"diag")
+    (tmp_path / stray).write_bytes(b"x")
+    with pytest.raises(SystemExit, match="unexpected"):
+        read_outputs(tmp_path, 2, "features.raw", parse_dims("1,6,6,72"), "NHWC")
+
+
+def test_snpe_diag_named_directory_refused(tmp_path):
+    _two_results(tmp_path)
+    (tmp_path / "SNPEDiag.log").mkdir()
+    with pytest.raises(SystemExit, match="unexpected"):
+        read_outputs(tmp_path, 2, "features.raw", parse_dims("1,6,6,72"), "NHWC")
+
+
+def test_snpe_diag_log_inside_result_dir_refused(tmp_path):
+    _two_results(tmp_path)
+    (tmp_path / "Result_0" / "SNPEDiag.log").write_bytes(b"diag")
+    with pytest.raises(SystemExit, match="expected only features.raw"):
+        read_outputs(tmp_path, 2, "features.raw", parse_dims("1,6,6,72"), "NHWC")
+
+
+def test_main_records_snpe_diag_logs(tmp_path):
+    import hashlib
+
+    (tmp_path / "out").mkdir()
+    (tmp_path / "out" / "SNPEDiag.log").write_bytes(b"diag-bytes")
+    _, s = _synthetic_run(tmp_path, log_text="Runtime: CPU\n")
+    assert s["pass"] and s["snpe_diag_logs_in_outputs_dir"] == [
+        {"name": "SNPEDiag.log", "sha256": hashlib.sha256(b"diag-bytes").hexdigest()}]
+    assert "`SNPEDiag.log` sha256" in (tmp_path / "summary" / "summary.md").read_text()
+
+
+def test_snpe_diag_name_rule_is_exact_and_case_sensitive():
+    from read_snpe_outputs import SNPE_DIAG_LOG
+
+    assert SNPE_DIAG_LOG.match("SNPEDiag.log") and SNPE_DIAG_LOG.match("SNPEDiag_0.log")
+    for bad in ("snpediag.log", "SNPEDIAG.log", "SNPEDiag.log.bak", "xSNPEDiag.log", "SNPEDiag.txt"):
+        assert not SNPE_DIAG_LOG.match(bad)

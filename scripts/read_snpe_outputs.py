@@ -9,6 +9,9 @@ crop_id, not by position. Compares against tolerances.board_cpu_vs_onnx (never c
 --purpose formal|smoke requires --canonical-inputs: a directory made by scripts/canonical_crops.py whose
 raw inputs, input list and package manifest are re-verified against Part A's pinned sha256 values; crop
 IDs then come from that verified package, and anything that does not verify is refused.
+--reference-raw-dir (formal/smoke only) compares against Part A's own NCHW reference features instead of Part
+B's ONNX features: every file is re-verified against expected_sha256 in the same pinned package manifest,
+matched by crop_id in the verified order, and refused on any mismatch, missing/extra file or wrong size.
 
 Two separate verdicts:
   numeric_match    - every check within tolerance
@@ -17,7 +20,8 @@ Overall PASS only if both are true. backend_verified needs POSITIVE evidence of 
 executed: per-layer runtimes from --diag-log (snpe-diagview output) when given, else explicit runtime lines
 in the snpe-net-run log. Request-only text (flags such as --use_gpu, echoed commands, "requested runtime")
 is never evidence, and any fallback / unavailable / not supported / failed-to-create / error line makes it
-false whatever else appears. Patterns are strict and still to be confirmed on the first real board logs.
+false whatever else appears. The snpe-diagview per-layer format ("0: <layer> : <t> us : <RUNTIME>") was
+confirmed on the conversion host's x86_64 log; it and the stdout patterns must be re-confirmed on the first RB5 log.
 """
 
 import argparse
@@ -44,8 +48,14 @@ RUNTIME_PATTERNS = [
     re.compile(rf"\b({_RT})\s+runtime\s+(?:selected|is used|in use)\b", re.I),
 ]
 # Per-layer runtime in snpe-diagview text output of SNPEDiag.log (preferred evidence when given).
-# Format also to be confirmed on the first real diag log.
-DIAG_LAYER_PATTERN = re.compile(rf"\blayer\b.*?\bruntime\s*[:=]?\s*({_RT})\b", re.I)
+# Real format (QAIRT 2.33.2 snpe-diagview, under "Per-Layer Execution Times:"), confirmed on the conversion
+# host's x86_64 log results/raw/conversion/host_dev/diag.txt; re-confirm on the first RB5 log:
+#     "    0: _node_Conv_102 : 1919 us : CPU"
+# The runtime must be the whole last field of the line. The earlier generic form is kept as a fallback.
+DIAG_LAYER_PATTERNS = [
+    re.compile(rf"^\s*\d+:\s*\S+\s*:\s*\d+(?:\.\d+)?\s*us\s*:\s*({_RT})\s*$", re.I),
+    re.compile(rf"\blayer\b.*?\bruntime\s*[:=]?\s*({_RT})\b", re.I),
+]
 # Any of these anywhere in the evidence -> not verified, whatever else appears (deliberately broad).
 NEGATIVE_PATTERN = re.compile(
     r"fall(?:ing|s)?[\s_-]*back|unavailable|not available|not supported|unsupported|"
@@ -85,10 +95,14 @@ def parse_diag(diag_text):
     """Return (runtime, layer_lines) from per-layer diag output; None unless every layer names the same runtime."""
     found, evidence = set(), []
     for line in (diag_text or "").splitlines():
-        m = DIAG_LAYER_PATTERN.search(line)
-        if m:
-            found.add(m.group(1).upper())
-            evidence.append(line.strip())
+        if _request_only(line):
+            continue
+        for pat in DIAG_LAYER_PATTERNS:
+            m = pat.search(line)
+            if m:
+                found.add(m.group(1).upper())
+                evidence.append(line.strip())
+                break
     return (found.pop() if len(found) == 1 else None), evidence
 
 
@@ -134,15 +148,34 @@ def to_nchw(arr: np.ndarray, layout: str) -> np.ndarray:
     raise ValueError(f"unknown layout {layout}")
 
 
+SNPE_DIAG_LOG = re.compile(r"^SNPEDiag[^/]*\.log$")
+
+
+def snpe_diag_logs(outputs_dir: Path) -> list:
+    """snpe-net-run's own SNPEDiag*.log files at the TOP LEVEL of the outputs dir (regular files only).
+
+    These are written by snpe-net-run into every --output_dir; they are tolerated there, never read for the
+    numeric checks, and recorded (name + sha256) in the summary. Nothing else is tolerated."""
+    if not outputs_dir.is_dir():
+        return []
+    return [
+        {"name": p.name, "sha256": sha256_file(p)}
+        for p in sorted(outputs_dir.iterdir())
+        if SNPE_DIAG_LOG.match(p.name) and p.is_file() and not p.is_symlink()
+    ]
+
+
 def read_outputs(outputs_dir: Path, n: int, output_file: str, dims, layout: str) -> np.ndarray:
     """Read Result_<i>/<output_file> for i in [0, n); return float32 [n, C, H, W].
 
     Rejects: a missing or extra Result_* directory, any other entry in the outputs dir or a Result dir,
-    and any output whose byte size is not exactly prod(dims) * 4.
+    and any output whose byte size is not exactly prod(dims) * 4. The only tolerated extra entries are
+    snpe-net-run's SNPEDiag*.log regular files at the top level (see snpe_diag_logs); they are not read here.
     """
     expected_bytes = int(np.prod(dims)) * 4
     want_dirs = {f"Result_{i}" for i in range(n)}
     have = {p.name for p in outputs_dir.iterdir()} if outputs_dir.is_dir() else set()
+    have -= {d["name"] for d in snpe_diag_logs(outputs_dir)}
     if have != want_dirs:
         raise SystemExit(
             f"{outputs_dir}: expected exactly {sorted(want_dirs)}; missing {sorted(want_dirs - have)}, "
@@ -197,16 +230,46 @@ def verdict_line(s: dict) -> str:
     return f"NOT PASS (numeric_match={s['numeric_match']}, backend_verified={s['backend_verified']})"
 
 
+TARGETS = {
+    "rb5": {"title": "D6 — RB5 vs ONNX Runtime encoder features", "who": "Board", "note": None},
+    "conversion-host": {
+        "title": "Development check on the conversion host — x86_64 snpe-net-run vs ONNX Runtime encoder features",
+        "who": "Host",
+        "note": "Development check on the conversion host, not the RB5 experiment: x86_64 host runtime, "
+                "Part B development crops. Says nothing about RB5 CPU accuracy or timing.",
+    },
+}
+# Conversion host on Part A's frozen crops vs Part A's reference features (--reference-raw-dir).
+HOST_CANONICAL = {
+    "title": "Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment — snpe-net-run vs Part A's reference features",
+    "who": "Host",
+    "note": "Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment: Part A's frozen crops and "
+            "reference features, x86_64 host runtime. Says nothing about RB5 CPU accuracy or timing; the RB5 CPU run is Part A's.",
+}
+
+
+def target_info(target: str, purpose: str) -> dict:
+    if target == "conversion-host" and purpose != "dev":
+        t = dict(HOST_CANONICAL)
+        if purpose == "formal":
+            t["title"] = t["title"].replace("Smoke check", "Formal-set check")
+            t["note"] = t["note"].replace("Smoke check", "Formal-set check")
+        return t
+    return TARGETS[target]
+
+
 def _markdown(s: dict) -> str:
     c, o, b = s["checks"], s["overall"], s["backend"]
+    t = target_info(s["target"], s["purpose"])
     lines = [
-        "# D6 — RB5 vs ONNX Runtime encoder features",
+        f"# {t['title']}",
         "",
+        *([f"**{t['note']}**", ""] if t["note"] else []),
         f"**Purpose: {s['purpose_label']}**",
         "",
         f"**Result: {verdict_line(s)}** on {s['n_crops']} crops.",
         "",
-        f"- numeric_match: **{s['numeric_match']}** (tolerances `tolerances.board_cpu_vs_onnx`, declared before this run, unchanged)",
+        f"- numeric_match: **{s['numeric_match']}** (tolerances `tolerances.{s['tolerance_key']}`, declared before this run, unchanged)",
         f"- backend_verified: **{s['backend_verified']}** — requested `{s['requested_runtime']}`, "
         f"actual from log `{b['actual_runtime']}` ({b['reason']})",
         "",
@@ -216,25 +279,31 @@ def _markdown(s: dict) -> str:
         f"| rel_l2 per crop | {c['rel_l2_per_crop']['limit']:.1e} | {c['rel_l2_per_crop']['worst']:.3e} "
         f"(idx {o['worst_crop_rel_l2']['row']}) | {c['rel_l2_per_crop']['pass']} |",
         "",
-        f"Overall: max_abs {o['max_abs']:.3e}, mean_abs {o['mean_abs']:.3e}, rel_l2 {o['rel_l2']:.3e}.",
-        f"Diagnostic, board vs PyTorch: max_abs {s['vs_torch']['max_abs']:.3e}, rel_l2 {s['vs_torch']['rel_l2']:.3e}.",
+        f"Overall: max_abs {o['max_abs']:.3e}, mean_abs (MAE) {o['mean_abs']:.3e}, RMSE {o['rmse']:.3e}, rel_l2 {o['rel_l2']:.3e}.",
+        (f"Diagnostic, {t['who'].lower()} vs PyTorch: max_abs {s['vs_torch']['max_abs']:.3e}, rel_l2 {s['vs_torch']['rel_l2']:.3e}."
+         if s["vs_torch"] else "No PyTorch diagnostic: Part B's PyTorch features come from regenerated crops, not Part A's frozen ones."),
         "",
-        f"Board output: `{s['output_file']}` dims {s['output_dims']} layout {s['output_layout']} "
+        f"{t['who']} output: `{s['output_file']}` dims {s['output_dims']} layout {s['output_layout']} "
         "-> explicit transpose to NCHW [1,72,6,6]. Result_<i> matched to input_list line i, reference by crop_id.",
-        f"Reference: `{s['reference']}` sha256 `{s['reference_sha256']}`.",
+        (f"Reference: Part A's features `{s['reference']}` (NCHW), {len(s['reference_files'])} files, each sha256 verified "
+         f"against the pinned package manifest (sha256 `{s['canonical']['package_manifest_sha256']}`, pinned by "
+         f"`{s['canonical']['manifest']}`); matched by crop_id in the verified order."
+         if s.get("reference_files") else f"Reference: `{s['reference']}` sha256 `{s['reference_sha256']}`."),
         f"Run log: `{s['run_log']}` sha256 `{s['run_log_sha256']}`.",
+        "snpe-net-run SNPEDiag*.log in the outputs dir (tolerated, not used for numeric checks): "
+        + ("; ".join(f"`{d['name']}` sha256 `{d['sha256']}`" for d in s.get("snpe_diag_logs_in_outputs_dir") or []) or "none"),
         f"Runtime evidence (source: {b['source']}): " + ("; ".join(f"`{e}`" for e in b["evidence"][:5]) if b["evidence"] else "none"),
         "Negative lines: " + ("; ".join(f"`{e}`" for e in b["negative"][:5]) if b["negative"] else "none"),
         "",
         "## Per crop",
         "",
-        "| idx | crop_id | reference row | max_abs | mean_abs | rel_l2 | within |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| idx | crop_id | reference row | max_abs | mean_abs (MAE) | RMSE | rel_l2 | within |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for r in s["per_crop"]:
         lines.append(
             f"| {r['row']} | `{r['crop_id']}` | {r['reference_row']} | {r['max_abs']:.3e} | {r['mean_abs']:.3e} "
-            f"| {r['rel_l2']:.3e} | {r['pass']} |"
+            f"| {r['rmse']:.3e} | {r['rel_l2']:.3e} | {r['pass']} |"
         )
     return "\n".join(lines) + "\n"
 
@@ -257,8 +326,17 @@ def main():
     ap.add_argument("--out-dir", default="results/board_cpu_d6")
     ap.add_argument("--features-out", default="artifacts/reference/board_cpu_d6_features.npy")
     ap.add_argument("--purpose", choices=["dev", "formal", "smoke"], default="dev")
+    ap.add_argument("--target", choices=sorted(TARGETS), default="rb5",
+                    help="where snpe-net-run ran; conversion-host labels the run a development check, not the RB5 experiment")
+    ap.add_argument("--tolerance-key", default="board_cpu_vs_onnx", help="key under tolerances: in the config")
     ap.add_argument("--canonical-inputs", default=None, help="for formal/smoke: dir made by scripts/canonical_crops.py")
+    ap.add_argument("--reference-raw-dir", default=None,
+                    help="formal/smoke only: Part A's reference features (made by canonical_crops.py --references); "
+                         "every file is re-verified against expected_sha256 in the pinned package manifest, matched by "
+                         "crop_id in the verified order; replaces --reference/--reference-manifest/--torch-reference")
     args = ap.parse_args()
+    if args.reference_raw_dir and args.purpose == "dev":
+        raise SystemExit("--reference-raw-dir requires --purpose formal|smoke (Part A's verified frozen crops)")
 
     cfg = load_config(REPO / args.config)
     output_file = args.output_file or f"{cfg['encoder']['output']['name']}.raw"
@@ -281,20 +359,39 @@ def main():
         input_list = pkg / "input_list.txt"
         ids = [r["crop_id"] for r in canonical["inputs"]]
         purpose_label = f"{args.purpose} - Part A frozen crops verified against {canonical['pinned']['manifest']}"
-    ref_rows = reference_rows(REPO / args.reference_manifest, ids)
-
     board = read_outputs(REPO / args.outputs_dir, len(ids), output_file, dims, args.output_layout)
-    ref = np.load(REPO / args.reference)[ref_rows]
+    out_shape = cfg["encoder"]["output"]["shape"]  # canonical NCHW [1, 72, 6, 6]
+    ref_files = None
+    if args.reference_raw_dir:
+        ref_dir = REPO / args.reference_raw_dir
+        try:
+            ref_files = canonical_crops.verify_references(
+                REPO / args.canonical_inputs, args.purpose, ref_dir, int(np.prod(out_shape)) * 4)
+        except canonical_crops.CanonicalError as e:
+            raise SystemExit(f"refusing reference features: {e}")
+        if [r["crop_id"] for r in ref_files] != ids:
+            raise SystemExit("reference crop_ids/order differ from the verified inputs")
+        # Part A's files are NCHW (pinned expected_layout); read as such, no transpose.
+        ref = np.concatenate([np.fromfile(ref_dir / r["file"], dtype="<f4").reshape(out_shape) for r in ref_files])
+        ref_rows = [r["idx"] for r in ref_files]
+    else:
+        ref_rows = reference_rows(REPO / args.reference_manifest, ids)
+        ref = np.load(REPO / args.reference)[ref_rows]
     want = [len(ids), *cfg["encoder"]["output"]["shape"][1:]]
     if list(board.shape) != want or list(ref.shape) != want:
         raise SystemExit(f"shape mismatch: board {list(board.shape)}, reference {list(ref.shape)}, want {want}")
 
-    result = compare(ref, board, cfg["tolerances"]["board_cpu_vs_onnx"])
-    torch_ref = np.load(REPO / args.torch_reference)[ref_rows].astype(np.float64)
-    vs_torch = {
-        "max_abs": float(np.abs(board - torch_ref).max()),
-        "rel_l2": float(np.linalg.norm(board - torch_ref) / np.linalg.norm(torch_ref)),
-    }
+    if args.tolerance_key not in cfg["tolerances"]:
+        raise SystemExit(f"tolerances.{args.tolerance_key} is not declared in {args.config}; declare it before comparing")
+    tol = cfg["tolerances"][args.tolerance_key]
+    result = compare(ref, board, tol)
+    vs_torch = None
+    if ref_files is None:  # Part B's PyTorch features are for Part B's crops only
+        torch_ref = np.load(REPO / args.torch_reference)[ref_rows].astype(np.float64)
+        vs_torch = {
+            "max_abs": float(np.abs(board - torch_ref).max()),
+            "rel_l2": float(np.linalg.norm(board - torch_ref) / np.linalg.norm(torch_ref)),
+        }
     run_log = REPO / args.run_log
     diag_log = REPO / args.diag_log if args.diag_log else None
     backend = backend_check(run_log, args.requested_runtime, diag_log)
@@ -314,13 +411,18 @@ def main():
         "canonical": None if canonical is None else canonical["pinned"],
         "input_list": rel(input_list),
         "input_list_sha256": sha256_file(input_list),
-        "reference": rel(REPO / args.reference),
-        "reference_sha256": sha256_file(REPO / args.reference),
+        "reference": rel(REPO / (args.reference_raw_dir or args.reference)),
+        "reference_sha256": None if ref_files else sha256_file(REPO / args.reference),
+        "reference_files": ref_files,
+        "snpe_diag_logs_in_outputs_dir": snpe_diag_logs(REPO / args.outputs_dir),
         "run_log": rel(run_log),
         "run_log_sha256": sha256_file(run_log) if run_log.exists() else None,
         "diag_log": rel(diag_log) if diag_log else None,
         "diag_log_sha256": sha256_file(diag_log) if diag_log and diag_log.exists() else None,
-        "tolerances": cfg["tolerances"]["board_cpu_vs_onnx"],
+        "target": args.target,
+        "target_note": target_info(args.target, args.purpose)["note"],
+        "tolerance_key": args.tolerance_key,
+        "tolerances": tol,
         "vs_torch": vs_torch,
         **{k: v for k, v in result.items() if k != "pass"},
     }
@@ -338,13 +440,15 @@ def main():
     np.save(feats, board)
 
     c, o = result["checks"], result["overall"]
+    if target_info(args.target, args.purpose)["note"]:
+        print(f"[board] {target_info(args.target, args.purpose)['note']}")
     print(f"[board] purpose: {purpose_label}")
     print(f"[board] {verdict_line(summary)}: {len(ids)} crops")
     print(f"[board] numeric_match {numeric_match}: max_abs worst {c['max_abs']['worst']:.3e} (limit {c['max_abs']['limit']:.1e}); "
           f"rel_l2 worst crop {c['rel_l2_per_crop']['worst']:.3e} (limit {c['rel_l2_per_crop']['limit']:.1e})")
     print(f"[board] backend_verified {backend['backend_verified']}: requested {summary['requested_runtime']}, "
           f"log {backend['actual_runtime']} ({backend['reason']})")
-    print(f"[board] overall max_abs {o['max_abs']:.3e}, mean_abs {o['mean_abs']:.3e}, rel_l2 {o['rel_l2']:.3e}")
+    print(f"[board] overall max_abs {o['max_abs']:.3e}, mean_abs {o['mean_abs']:.3e}, rmse {o['rmse']:.3e}, rel_l2 {o['rel_l2']:.3e}")
     for p in (sj, sm, feats):
         print(f"[board] wrote {rel(p)}  sha256 {sha256_file(p)}")
     sys.exit(0 if summary["pass"] else 1)

@@ -31,14 +31,23 @@ sdk:
   board_runtime_bin: bin/aarch64-oe-linux-gcc11.2  # snpe-net-run
   board_runtime_lib: lib/aarch64-oe-linux-gcc11.2  # libSNPE.so, libSnpeDspV66Stub.so
   dsp_lib: lib/hexagon-v66/unsigned            # libSnpeDspV66Skel.so (QRB5165 = Hexagon v66)
-  conversion_host: TBD
+  conversion_host:  # docs/env_conversion_host.md; connection details stay in local ssh config
+    alias: convhost
+    os: "Ubuntu 22.04.5 LTS"
+    arch: x86_64
+    python: "3.10.12"
+    sdk_root: ~/umetrack_b/qairt/qairt/2.33.2.250410
+    venv: ~/umetrack_b/venv
+    extra_ld_library_path: ~/umetrack_b/deps/usr/lib/llvm-14/lib  # user-space libc++1-14/libc++abi1-14/libunwind-14
+    pip_deviation: "protobuf 3.20.3 (SDK pins 3.19.6; onnx 1.16.1 needs >=3.20.2)"
+    status: "converter starts (--help exit 0)"
   board: rb5
 
 data:
   recordings_dir: data/
   first_recording: raw_data/real/separate_hand/testing/user_19/recording_00
 
-# proposed, agree with Steven before formal comparison; never loosen to pass
+# never loosen to pass. Keys are proposed unless their status says agreed (rb5_cpu_* agreed 2026-11-28).
 tolerances:
   onnx_vs_torch:
     max_abs: 1.0e-4
@@ -46,6 +55,33 @@ tolerances:
   board_cpu_vs_onnx:
     max_abs: 1.0e-3
     rel_l2: 1.0e-4
+  # development check on the conversion host (x86_64 snpe-net-run, Part B dev crops); not the RB5 experiment.
+  # Declared 2026-11-26 before running it; same limits as board_cpu_vs_onnx.
+  host_cpu_vs_onnx_dev:
+    max_abs: 1.0e-3
+    rel_l2: 1.0e-4
+  # smoke check on the conversion host (x86_64 CPU), not the RB5 experiment: encoder_float.dlc on Part A's
+  # 7 frozen smoke crops vs Part A's expected-nchw features. Declared 2026-11-27 before running it.
+  host_cpu_vs_reference_smoke:
+    max_abs: 1.0e-3
+    rel_l2: 1.0e-4
+    status: proposed, pending agreement with Steven
+  # RB5 CPU acceptance criteria (agreed with Steven 2026-11-28, on PR review), declared before any RB5 run.
+  # Reference: Part A's frozen reference features (formal package sha256 7eab946c..., smoke manifest
+  # cc0f5ca7...), produced by the Mac PyTorch encoder, checkpoint 72eab0ea...
+  # Both limits apply to EVERY crop. MAE, RMSE and direct joint displacement are diagnostics only.
+  rb5_cpu_vs_reference:
+    max_abs: 1.0e-3
+    rel_l2: 1.0e-4
+    applies_to: every crop
+    reference: "Part A frozen reference features: package sha256 7eab946c7430eb2492af4ea567013e2250ac76eece746345f676cf5997ef9ca8, smoke manifest sha256 cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5; Mac PyTorch encoder, checkpoint 72eab0ea2c5c4518188ede4cf62e98f62eb1e4ef13628c0f20ad3fc56d1bf18d"
+    diagnostics_only: [mean_abs, rmse]
+    status: agreed with Steven 2026-11-28
+  rb5_cpu_pose:
+    abs_mpjpe_change_mm_lt: 0.1
+    paired_reference_mpjpe_mm: 8.961398
+    diagnostics_only: [direct_joint_displacement]
+    status: agreed with Steven 2026-11-28
   pose_error_change_mm: 0.1
 
 benchmark:

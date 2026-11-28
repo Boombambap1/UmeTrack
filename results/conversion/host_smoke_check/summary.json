@@ -1,0 +1,280 @@
+{
+  "pass": true,
+  "numeric_match": true,
+  "backend_verified": true,
+  "backend": {
+    "backend_verified": true,
+    "actual_runtime": "CPU",
+    "source": "diag",
+    "evidence": [
+      "0: _node_Conv_102 : 2583 us : CPU",
+      "1: _node_relu : 638 us : CPU",
+      "2: _node_max_pool2d : 574 us : CPU",
+      "3: _node_Conv_104 : 2397 us : CPU",
+      "4: _node_relu_1 : 573 us : CPU",
+      "5: _node_Conv_106 : 2142 us : CPU",
+      "6: _node_add : 85 us : CPU",
+      "7: _node_relu_2 : 617 us : CPU",
+      "8: _node_Conv_108 : 2072 us : CPU",
+      "9: _node_relu_3 : 545 us : CPU",
+      "10: _node_Conv_110 : 2058 us : CPU",
+      "11: _node_add_1 : 83 us : CPU",
+      "12: _node_relu_4 : 603 us : CPU",
+      "13: _node_Conv_112 : 832 us : CPU",
+      "14: _node_relu_5 : 536 us : CPU",
+      "15: _node_Conv_114 : 1215 us : CPU",
+      "16: _node_Conv_116 : 580 us : CPU",
+      "17: _node_add_2 : 44 us : CPU",
+      "18: _node_relu_6 : 572 us : CPU",
+      "19: _node_Conv_118 : 1298 us : CPU",
+      "20: _node_relu_7 : 539 us : CPU",
+      "21: _node_Conv_120 : 1219 us : CPU",
+      "22: _node_add_3 : 49 us : CPU",
+      "23: _node_relu_8 : 576 us : CPU",
+      "24: _node_Conv_122 : 1219 us : CPU",
+      "25: _node_relu_9 : 532 us : CPU",
+      "26: _node_Conv_124 : 1272 us : CPU",
+      "27: _node_add_4 : 49 us : CPU",
+      "28: _node_relu_10 : 575 us : CPU",
+      "29: _node_Conv_126 : 439 us : CPU",
+      "30: _node_relu_11 : 409 us : CPU",
+      "31: _node_Conv_128 : 543 us : CPU",
+      "32: _node_Conv_130 : 232 us : CPU",
+      "33: _node_add_5 : 24 us : CPU",
+      "34: _node_relu_12 : 446 us : CPU",
+      "35: _node_Conv_132 : 532 us : CPU",
+      "36: _node_relu_13 : 407 us : CPU",
+      "37: _node_Conv_134 : 523 us : CPU",
+      "38: _node_add_6 : 21 us : CPU",
+      "39: _node_relu_14 : 451 us : CPU",
+      "40: _node_Conv_136 : 528 us : CPU",
+      "41: _node_relu_15 : 417 us : CPU",
+      "42: _node_Conv_138 : 605 us : CPU",
+      "43: _node_add_7 : 19 us : CPU",
+      "44: _node_relu_16 : 395 us : CPU",
+      "45: _node_Conv_140 : 509 us : CPU",
+      "46: _node_relu_17 : 388 us : CPU",
+      "47: _node_Conv_142 : 510 us : CPU",
+      "48: _node_add_8 : 20 us : CPU",
+      "49: _node_relu_18 : 412 us : CPU",
+      "50: _node_Conv_144 : 519 us : CPU",
+      "51: _node_relu_19 : 414 us : CPU",
+      "52: _node_Conv_146 : 526 us : CPU",
+      "53: _node_add_9 : 20 us : CPU",
+      "54: _node_relu_20 : 426 us : CPU",
+      "55: _node_Conv_148 : 461 us : CPU",
+      "56: _node_relu_21 : 218 us : CPU",
+      "57: _node_Conv_150 : 834 us : CPU",
+      "58: _node_Conv_152 : 117 us : CPU",
+      "59: _node_add_10 : 10 us : CPU",
+      "60: _node_relu_22 : 213 us : CPU",
+      "61: _node_Conv_154 : 814 us : CPU",
+      "62: _node_relu_23 : 210 us : CPU",
+      "63: _node_Conv_156 : 777 us : CPU",
+      "64: _node_add_11 : 11 us : CPU",
+      "65: _node_relu_24 : 211 us : CPU",
+      "66: _node_conv2d_28 : 118 us : CPU"
+    ],
+    "negative": [],
+    "reason": "diag runtime matches request"
+  },
+  "n_crops": 7,
+  "requested_runtime": "CPU",
+  "output_file": "features.raw",
+  "output_dims": [
+    1,
+    6,
+    6,
+    72
+  ],
+  "output_layout": "NHWC",
+  "purpose": "smoke",
+  "purpose_label": "smoke - Part A frozen crops verified against manifests/smoke-exchange.json",
+  "canonical": {
+    "set": "smoke",
+    "manifest": "manifests/smoke-exchange.json",
+    "manifest_file_sha256": "7e73ac0e568f01f739cfd0146b668d4b1f19a766ec2ac2b5aa0ba81023d53ed1",
+    "crops": 7,
+    "archive_sha256": "fcbcad10e9b53795451506380734bc9f8ba6f883df725230e9c0b4e52eafbdac",
+    "archive_bytes": 151000,
+    "input_list_sha256": "59c41769cf063f13610fa12fe3bc8102c0be74bcc407c383b19b693c37bc29bb",
+    "package_manifest_sha256": "cc0f5ca73df17a85e7ef660da8c0c6fb07e66cc5da16c6cc21b45d07bc826fb5",
+    "crop_ids": [
+      "user_19-recording_00:000000:hand0:camera1",
+      "user_19-recording_00:000000:hand0:camera2",
+      "user_19-recording_00:000000:hand1:camera2",
+      "user_23-recording_00:000000:hand0:camera1",
+      "user_23-recording_00:000000:hand0:camera2",
+      "user_23-recording_00:000000:hand1:camera1",
+      "user_23-recording_00:000000:hand1:camera2"
+    ]
+  },
+  "input_list": "artifacts/canonical/smoke-2026-11-21/input_list.txt",
+  "input_list_sha256": "59c41769cf063f13610fa12fe3bc8102c0be74bcc407c383b19b693c37bc29bb",
+  "reference": "artifacts/reference/smoke-2026-11-21",
+  "reference_sha256": null,
+  "reference_files": [
+    {
+      "idx": 0,
+      "crop_id": "user_19-recording_00:000000:hand0:camera1",
+      "file": "expected-nchw/crop-00000.raw",
+      "sha256": "ae158af48d0c5e0266f51cf37f8b794d2fa28c0e6ca99f69930b9e22ca811c31"
+    },
+    {
+      "idx": 1,
+      "crop_id": "user_19-recording_00:000000:hand0:camera2",
+      "file": "expected-nchw/crop-00001.raw",
+      "sha256": "4f0a4f5f6257307cb10602cf9583aa855726e0859321d23583f2980c910dedd5"
+    },
+    {
+      "idx": 2,
+      "crop_id": "user_19-recording_00:000000:hand1:camera2",
+      "file": "expected-nchw/crop-00002.raw",
+      "sha256": "2c66bca62c1e0d8176c99dabd9a775985192cd145a03d006129820f058c77210"
+    },
+    {
+      "idx": 3,
+      "crop_id": "user_23-recording_00:000000:hand0:camera1",
+      "file": "expected-nchw/crop-00003.raw",
+      "sha256": "d7d00c3f4efa32282bba30dbdbd6b655e247ab7eb347cdd73938e1ecf1ba121b"
+    },
+    {
+      "idx": 4,
+      "crop_id": "user_23-recording_00:000000:hand0:camera2",
+      "file": "expected-nchw/crop-00004.raw",
+      "sha256": "2a8b4c4d66669446adc2779441d8f0c526afc9c80a63fa9e50b2a0ebd400e3b0"
+    },
+    {
+      "idx": 5,
+      "crop_id": "user_23-recording_00:000000:hand1:camera1",
+      "file": "expected-nchw/crop-00005.raw",
+      "sha256": "d8901bba7d534fb2e135e6a3883006708969cc1224f525e4b21080abfbbc25d1"
+    },
+    {
+      "idx": 6,
+      "crop_id": "user_23-recording_00:000000:hand1:camera2",
+      "file": "expected-nchw/crop-00006.raw",
+      "sha256": "f4ea8b7fac5dcda1e0dfa88fb663a645fc7dc160d424b95b7e0c8bfdae875543"
+    }
+  ],
+  "snpe_diag_logs_in_outputs_dir": [],
+  "run_log": "results/raw/conversion/host_smoke/net_run.log",
+  "run_log_sha256": "2952b356441002b64a531ebcca8cdb8fe1895d3a10185f44b017751131bb7b70",
+  "diag_log": "results/raw/conversion/host_smoke/diag.txt",
+  "diag_log_sha256": "65aaa4452d29ed0c81dcbc091158f2a81a0d8bd622d412901ff3b2d50c9ccdb8",
+  "target": "conversion-host",
+  "target_note": "Smoke check on the conversion host (x86_64 CPU), not the RB5 experiment: Part A's frozen crops and reference features, x86_64 host runtime. Says nothing about RB5 CPU accuracy or timing; the RB5 CPU run is Part A's.",
+  "tolerance_key": "host_cpu_vs_reference_smoke",
+  "tolerances": {
+    "max_abs": 0.001,
+    "rel_l2": 0.0001,
+    "status": "proposed, pending agreement with Steven"
+  },
+  "vs_torch": null,
+  "checks": {
+    "max_abs": {
+      "limit": 0.001,
+      "worst": 1.0728836059570312e-06,
+      "pass": true
+    },
+    "rel_l2_per_crop": {
+      "limit": 0.0001,
+      "worst": 4.223291312763005e-07,
+      "pass": true,
+      "n_crops_over": 0
+    }
+  },
+  "overall": {
+    "max_abs": 1.0728836059570312e-06,
+    "mean_abs": 4.1890049342680876e-08,
+    "rmse": 6.441786416699846e-08,
+    "rel_l2": 3.005741676714419e-07,
+    "worst_crop_max_abs": {
+      "row": 6,
+      "value": 1.0728836059570312e-06
+    },
+    "worst_crop_rel_l2": {
+      "row": 4,
+      "value": 4.223291312763005e-07
+    }
+  },
+  "torch_feature_range": {
+    "min": -0.6123501062393188,
+    "max": 1.7979058027267456,
+    "mean": 0.08190027624368668,
+    "std": 0.19804975390434265,
+    "frac_zero": 0.0
+  },
+  "per_crop": [
+    {
+      "row": 0,
+      "max_abs": 4.76837158203125e-07,
+      "mean_abs": 3.713156404024002e-08,
+      "rmse": 5.241026119750202e-08,
+      "rel_l2": 2.4540643712098613e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000000:hand0:camera1",
+      "reference_row": 0
+    },
+    {
+      "row": 1,
+      "max_abs": 5.960464477539062e-07,
+      "mean_abs": 3.9413523440830265e-08,
+      "rmse": 5.673187463640452e-08,
+      "rel_l2": 2.631466988633155e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000000:hand0:camera2",
+      "reference_row": 1
+    },
+    {
+      "row": 2,
+      "max_abs": 5.960464477539062e-07,
+      "mean_abs": 3.7842499065767317e-08,
+      "rmse": 5.53019537023664e-08,
+      "rel_l2": 2.584502836191802e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000000:hand1:camera2",
+      "reference_row": 2
+    },
+    {
+      "row": 3,
+      "max_abs": 6.556510925292969e-07,
+      "mean_abs": 4.510530198999339e-08,
+      "rmse": 6.929759568465292e-08,
+      "rel_l2": 2.819435171067997e-07,
+      "pass": true,
+      "crop_id": "user_23-recording_00:000000:hand0:camera1",
+      "reference_row": 3
+    },
+    {
+      "row": 4,
+      "max_abs": 9.5367431640625e-07,
+      "mean_abs": 5.022336973738282e-08,
+      "rmse": 8.2299625287822e-08,
+      "rel_l2": 4.223291312763005e-07,
+      "pass": true,
+      "crop_id": "user_23-recording_00:000000:hand0:camera2",
+      "reference_row": 4
+    },
+    {
+      "row": 5,
+      "max_abs": 4.172325134277344e-07,
+      "mean_abs": 3.737222644382582e-08,
+      "rmse": 5.3332774969020335e-08,
+      "rel_l2": 2.868896110113869e-07,
+      "pass": true,
+      "crop_id": "user_23-recording_00:000000:hand1:camera1",
+      "reference_row": 5
+    },
+    {
+      "row": 6,
+      "max_abs": 1.0728836059570312e-06,
+      "mean_abs": 4.6141860680726504e-08,
+      "rmse": 7.486128124023502e-08,
+      "rel_l2": 3.3246731583525566e-07,
+      "pass": true,
+      "crop_id": "user_23-recording_00:000000:hand1:camera2",
+      "reference_row": 6
+    }
+  ]
+}

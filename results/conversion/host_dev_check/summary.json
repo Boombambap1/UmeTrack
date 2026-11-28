@@ -1,0 +1,221 @@
+{
+  "pass": true,
+  "numeric_match": true,
+  "backend_verified": true,
+  "backend": {
+    "backend_verified": true,
+    "actual_runtime": "CPU",
+    "source": "diag",
+    "evidence": [
+      "0: _node_Conv_102 : 1919 us : CPU",
+      "1: _node_relu : 293 us : CPU",
+      "2: _node_max_pool2d : 355 us : CPU",
+      "3: _node_Conv_104 : 1963 us : CPU",
+      "4: _node_relu_1 : 448 us : CPU",
+      "5: _node_Conv_106 : 1909 us : CPU",
+      "6: _node_add : 88 us : CPU",
+      "7: _node_relu_2 : 525 us : CPU",
+      "8: _node_Conv_108 : 1954 us : CPU",
+      "9: _node_relu_3 : 434 us : CPU",
+      "10: _node_Conv_110 : 1937 us : CPU",
+      "11: _node_add_1 : 86 us : CPU",
+      "12: _node_relu_4 : 544 us : CPU",
+      "13: _node_Conv_112 : 842 us : CPU",
+      "14: _node_relu_5 : 460 us : CPU",
+      "15: _node_Conv_114 : 1119 us : CPU",
+      "16: _node_Conv_116 : 557 us : CPU",
+      "17: _node_add_2 : 43 us : CPU",
+      "18: _node_relu_6 : 492 us : CPU",
+      "19: _node_Conv_118 : 1196 us : CPU",
+      "20: _node_relu_7 : 458 us : CPU",
+      "21: _node_Conv_120 : 1201 us : CPU",
+      "22: _node_add_3 : 46 us : CPU",
+      "23: _node_relu_8 : 493 us : CPU",
+      "24: _node_Conv_122 : 1191 us : CPU",
+      "25: _node_relu_9 : 626 us : CPU",
+      "26: _node_Conv_124 : 1146 us : CPU",
+      "27: _node_add_4 : 48 us : CPU",
+      "28: _node_relu_10 : 461 us : CPU",
+      "29: _node_Conv_126 : 416 us : CPU",
+      "30: _node_relu_11 : 393 us : CPU",
+      "31: _node_Conv_128 : 507 us : CPU",
+      "32: _node_Conv_130 : 211 us : CPU",
+      "33: _node_add_5 : 23 us : CPU",
+      "34: _node_relu_12 : 412 us : CPU",
+      "35: _node_Conv_132 : 516 us : CPU",
+      "36: _node_relu_13 : 406 us : CPU",
+      "37: _node_Conv_134 : 518 us : CPU",
+      "38: _node_add_6 : 18 us : CPU",
+      "39: _node_relu_14 : 425 us : CPU",
+      "40: _node_Conv_136 : 514 us : CPU",
+      "41: _node_relu_15 : 406 us : CPU",
+      "42: _node_Conv_138 : 514 us : CPU",
+      "43: _node_add_7 : 18 us : CPU",
+      "44: _node_relu_16 : 424 us : CPU",
+      "45: _node_Conv_140 : 515 us : CPU",
+      "46: _node_relu_17 : 407 us : CPU",
+      "47: _node_Conv_142 : 515 us : CPU",
+      "48: _node_add_8 : 18 us : CPU",
+      "49: _node_relu_18 : 423 us : CPU",
+      "50: _node_Conv_144 : 511 us : CPU",
+      "51: _node_relu_19 : 398 us : CPU",
+      "52: _node_Conv_146 : 512 us : CPU",
+      "53: _node_add_9 : 18 us : CPU",
+      "54: _node_relu_20 : 425 us : CPU",
+      "55: _node_Conv_148 : 452 us : CPU",
+      "56: _node_relu_21 : 195 us : CPU",
+      "57: _node_Conv_150 : 759 us : CPU",
+      "58: _node_Conv_152 : 111 us : CPU",
+      "59: _node_add_10 : 11 us : CPU",
+      "60: _node_relu_22 : 186 us : CPU",
+      "61: _node_Conv_154 : 779 us : CPU",
+      "62: _node_relu_23 : 178 us : CPU",
+      "63: _node_Conv_156 : 766 us : CPU",
+      "64: _node_add_11 : 10 us : CPU",
+      "65: _node_relu_24 : 206 us : CPU",
+      "66: _node_conv2d_28 : 112 us : CPU"
+    ],
+    "negative": [],
+    "reason": "diag runtime matches request"
+  },
+  "n_crops": 8,
+  "requested_runtime": "CPU",
+  "output_file": "features.raw",
+  "output_dims": [
+    1,
+    6,
+    6,
+    72
+  ],
+  "output_layout": "NHWC",
+  "purpose": "dev",
+  "purpose_label": "development only - Part B regenerated crops, not a formal comparison",
+  "canonical": null,
+  "input_list": "artifacts/snpe_inputs/d6_host_dev/input_list.txt",
+  "input_list_sha256": "7adb6c02d81887ec138bc3ac8da47357c7cf15e12aecf07dbfba70f1bdefec3a",
+  "reference": "artifacts/reference/onnx_features.npy",
+  "reference_sha256": "2e54dd25e3129b5c978aca03289b64c8b0b19d7ef4bcc10daffbafc4f2f6a414",
+  "run_log": "results/raw/conversion/host_dev/net_run.log",
+  "run_log_sha256": "4bc4979e23b8cba09deaed7e52f2b9491e35ced3c9da8779cc498e0f60281484",
+  "diag_log": "results/raw/conversion/host_dev/diag.txt",
+  "diag_log_sha256": "db4e7c6d64c95d0a5f506639dc2f8d06d8bdcd9faa1cd7580d4df379e4a8cb41",
+  "target": "conversion-host",
+  "target_note": "Development check on the conversion host, not the RB5 experiment: x86_64 host runtime, Part B development crops. Says nothing about RB5 CPU accuracy or timing.",
+  "tolerance_key": "host_cpu_vs_onnx_dev",
+  "tolerances": {
+    "max_abs": 0.001,
+    "rel_l2": 0.0001
+  },
+  "vs_torch": {
+    "max_abs": 1.5497207641601562e-06,
+    "rel_l2": 3.0426023780585144e-07
+  },
+  "checks": {
+    "max_abs": {
+      "limit": 0.001,
+      "worst": 2.2649765014648438e-06,
+      "pass": true
+    },
+    "rel_l2_per_crop": {
+      "limit": 0.0001,
+      "worst": 6.91936311257481e-07,
+      "pass": true,
+      "n_crops_over": 0
+    }
+  },
+  "overall": {
+    "max_abs": 2.2649765014648438e-06,
+    "mean_abs": 4.32374847914167e-08,
+    "rmse": 8.308825368215898e-08,
+    "rel_l2": 3.8690446231794445e-07,
+    "worst_crop_max_abs": {
+      "row": 3,
+      "value": 2.2649765014648438e-06
+    },
+    "worst_crop_rel_l2": {
+      "row": 3,
+      "value": 6.91936311257481e-07
+    }
+  },
+  "torch_feature_range": {
+    "min": -0.5522902607917786,
+    "max": 1.688058614730835,
+    "mean": 0.0840020477771759,
+    "std": 0.1976405680179596,
+    "frac_zero": 0.0
+  },
+  "per_crop": [
+    {
+      "row": 0,
+      "max_abs": 4.76837158203125e-07,
+      "mean_abs": 3.2534040251953734e-08,
+      "rel_l2": 2.3843978155137124e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000000:hand0:camera1",
+      "reference_row": 0
+    },
+    {
+      "row": 1,
+      "max_abs": 4.023313522338867e-07,
+      "mean_abs": 3.2620363650314604e-08,
+      "rel_l2": 2.2890525390041128e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000002:hand1:camera2",
+      "reference_row": 8
+    },
+    {
+      "row": 2,
+      "max_abs": 1.0728836059570312e-06,
+      "mean_abs": 4.596752402039222e-08,
+      "rel_l2": 3.773425356897164e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000005:hand1:camera2",
+      "reference_row": 17
+    },
+    {
+      "row": 3,
+      "max_abs": 2.2649765014648438e-06,
+      "mean_abs": 6.326849365399943e-08,
+      "rel_l2": 6.91936311257481e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000008:hand0:camera2",
+      "reference_row": 25
+    },
+    {
+      "row": 4,
+      "max_abs": 5.960464477539062e-07,
+      "mean_abs": 3.959603081629784e-08,
+      "rel_l2": 2.8573778829498736e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000011:hand0:camera2",
+      "reference_row": 34
+    },
+    {
+      "row": 5,
+      "max_abs": 8.344650268554688e-07,
+      "mean_abs": 4.887646983987019e-08,
+      "rel_l2": 3.6922827321143527e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000014:hand0:camera1",
+      "reference_row": 42
+    },
+    {
+      "row": 6,
+      "max_abs": 5.960464477539062e-07,
+      "mean_abs": 3.630639970831481e-08,
+      "rel_l2": 2.6363109094709456e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000017:hand0:camera1",
+      "reference_row": 51
+    },
+    {
+      "row": 7,
+      "max_abs": 1.1920928955078125e-06,
+      "mean_abs": 4.673055639019075e-08,
+      "rel_l2": 3.96813718836608e-07,
+      "pass": true,
+      "crop_id": "user_19-recording_00:000019:hand1:camera2",
+      "reference_row": 59
+    }
+  ]
+}
